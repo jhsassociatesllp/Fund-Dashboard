@@ -888,19 +888,40 @@ function detectDateColumn(rows) {
   );
 }
 
-// Filters a row set to a date range using its date column - `dateKeyOverride` pins a
-// specific column (e.g. Client Master's "im_signing_date", which must win over the
+// Ascending sort by a row set's date column (detectDateColumn, or dateKeyOverride to pin
+// one - same override rule filterRowsByDateRange below documents). A row whose date
+// doesn't parse sorts to the end rather than disappearing or landing somewhere
+// arbitrary - Array.prototype.sort is stable, so ties (including a run of unparseable
+// rows) keep their original relative order.
+function sortRowsByDate(rows, dateKeyOverride) {
+  if (!rows || rows.length <= 1) return rows;
+  const dateKey = dateKeyOverride || detectDateColumn(rows);
+  if (!dateKey) return rows;
+  return [...rows].sort((a, b) => {
+    const da = new Date(String(a[dateKey] ?? "").trim()).getTime();
+    const db = new Date(String(b[dateKey] ?? "").trim()).getTime();
+    return (Number.isNaN(da) ? Infinity : da) - (Number.isNaN(db) ? Infinity : db);
+  });
+}
+
+// Filters a row set to a date range using its date column, then sorts the result
+// ascending by that same column (sortRowsByDate) so every table built from this - which
+// is effectively every table in the app, see the call sites below - reads oldest-first
+// by default rather than in whatever order Mongo happened to return. `dateKeyOverride`
+// pins a specific column (e.g. Client Master's "im_signing_date", which must win over the
 // row's other date-ish columns like DOB) instead of relying on detectDateColumn's
 // auto-detection, which only looks at header wording and can't tell "signing date"
-// from "date of birth" apart. Rows whose date column doesn't parse are kept as-is
-// rather than dropped, since a bad date shouldn't silently make a row disappear from
-// the filtered view.
+// from "date of birth" apart. Rows whose date column doesn't parse are kept (not
+// dropped) by the range filter, since a bad date shouldn't silently make a row
+// disappear from the filtered view - sortRowsByDate then pushes those to the end.
 function filterRowsByDateRange(rows, fromDate, toDate, dateKeyOverride) {
-  if (rows.length === 0 || (!fromDate && !toDate)) return rows;
+  if (rows.length === 0) return rows;
+  if (!fromDate && !toDate) return sortRowsByDate(rows, dateKeyOverride);
+
   const dateKey = dateKeyOverride || detectDateColumn(rows);
   if (!dateKey) return rows;
 
-  return rows.filter((r) => {
+  const filtered = rows.filter((r) => {
     const d = new Date(String(r[dateKey] ?? "").trim());
     if (Number.isNaN(d.getTime())) return true;
     // Compared as local calendar-date strings (not Date objects) - the row's
@@ -914,6 +935,7 @@ function filterRowsByDateRange(rows, fromDate, toDate, dateKeyOverride) {
     if (toDate && dKey > toDate) return false;
     return true;
   });
+  return sortRowsByDate(filtered, dateKey);
 }
 
 // Per-view state for the generic "every table" date-range filters below
@@ -2107,7 +2129,12 @@ async function loadNavCategoryView(fund, category, label) {
     }
 
     const columns = Object.keys(records[0].data).map((key) => ({ key, label: key }));
-    const rows = records.map((r) => ({ ...r.data, __status: r.status, __errors: r.errors || [] }));
+    // Sorted ascending by date up front - the gain-summary/management-fees grouping
+    // below just .push()es each row into its bucket in whatever order it sees them, so
+    // pre-sorting here is enough to make every downstream table (the flat fallback below,
+    // each instrument/expense type's trade detail, each investor's day-by-day fee rows)
+    // come out date-ordered too, without sorting each of those separately.
+    const rows = sortRowsByDate(records.map((r) => ({ ...r.data, __status: r.status, __errors: r.errors || [] })));
 
     // Realised Gain and Unrealised Gain get a pivot-style summary (one row per Instrument
     // Type) instead of the flat table, provided the uploaded file actually has a
