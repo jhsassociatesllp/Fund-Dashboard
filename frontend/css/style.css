@@ -1910,7 +1910,7 @@ a.tab-button {
   flex: 0 0 auto;
   align-self: flex-start;
   overflow-x: auto;
-  border-right: 1px solid var(--gray-200);
+  border-right: 2px solid var(--blue-700);
 }
 
 .table-scroll--split__table .client-table {
