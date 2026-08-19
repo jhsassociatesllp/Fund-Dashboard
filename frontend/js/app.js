@@ -2111,6 +2111,19 @@ const EXCLUDED_GAIN_INSTRUMENT_TYPES = {
   "unrealised-gain": new Set(["slbm"]),
 };
 
+// SLBM shows up spelled out ("Securities Lending & Borrowing...") rather than as the
+// acronym on some sheets (Unrealised Gain does this, Realised Gain doesn't) - matched
+// separately since "slbm" in the set above can't also be a fixed string for that.
+const SLBM_PATTERN = /\bslbm\b|securities?\s*lending/i;
+
+function isExcludedGainInstrumentType(category, rawType) {
+  const excludedSet = EXCLUDED_GAIN_INSTRUMENT_TYPES[category];
+  if (!excludedSet) return false;
+  const type = String(rawType ?? "").trim();
+  if (excludedSet.has(type.toLowerCase())) return true;
+  return excludedSet.has("slbm") && SLBM_PATTERN.test(type);
+}
+
 // Display text for the grouping column, keyed by category - falls back to "Instrument
 // Type" (the gain categories' term) when a category isn't listed here.
 const GROUP_LABEL_BY_CATEGORY = { "other-expense": "Expense Type" };
@@ -2156,10 +2169,7 @@ async function loadNavCategoryView(fund, category, label) {
     // doesn't, so a differently-shaped upload still works.
     const instrumentTypeKey = GAIN_SUMMARY_CATEGORIES.has(category) ? detectInstrumentTypeKey(columns, rows) : null;
     if (instrumentTypeKey) {
-      const excludedTypes = EXCLUDED_GAIN_INSTRUMENT_TYPES[category];
-      const gainRows = excludedTypes
-        ? rows.filter((row) => !excludedTypes.has(String(row[instrumentTypeKey] ?? "").trim().toLowerCase()))
-        : rows;
+      const gainRows = rows.filter((row) => !isExcludedGainInstrumentType(category, row[instrumentTypeKey]));
 
       // Admin-maintained "which document validates this type" list (frontend/js/admin.js
       // is where it's edited); missing/unreachable just means every type shows "Not specified".
