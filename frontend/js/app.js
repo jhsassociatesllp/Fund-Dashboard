@@ -48,7 +48,7 @@ const state = {
 const CLIENT_COLUMNS = [
   { key: "investor_name", label: "Investor Name" },
   { key: "client_class", label: "Class" },
-  { key: "management_fees", label: "Management Fees" },
+  { key: "management_fees", label: "Management Fees", render: (value) => escapeHtml(formatPercentCell(value)) },
   { key: "client_code", label: "Client ID" },
   { key: "dp_id", label: "DP ID" },
   { key: "im_signing_date", label: "IM Signing Date" },
@@ -482,12 +482,13 @@ function maskBankAccount(value) {
   return str.length <= 4 ? str : str.slice(0, 4) + "X".repeat(str.length - 4);
 }
 
-// XIRR's "SOA" column (the base rate the auditor's own recalculation cross-checks -
-// see XIRR_FIELD_ALIASES in file_import.py) arrives from the sheet as a plain
-// decimal-looking number/string with no unit - append "%" for display. Reuses
-// formatCellValue so it still goes through the same raw-value handling (empty -> "-",
-// number formatting, ...) as every other cell rather than reimplementing it.
-function formatSoaPercentCell(value) {
+// Appends "%" for display to a value that's a plain decimal number/string with no unit
+// in the data itself - e.g. XIRR's "SOA" column (the base rate the auditor's own
+// recalculation cross-checks, see XIRR_FIELD_ALIASES in file_import.py) or Client
+// Master's Management Fees. Reuses formatCellValue so it still goes through the same
+// raw-value handling (empty -> "-", number formatting, ...) as every other cell rather
+// than reimplementing it.
+function formatPercentCell(value) {
   const text = formatCellValue({ value }, { key: "value" });
   return text === "-" ? text : `${text}%`;
 }
@@ -1853,7 +1854,7 @@ async function loadSoaCategoryView(fund) {
       .filter((key) => !key.startsWith("__"))
       .map((key) =>
         /^soa$/i.test(key)
-          ? { key, label: key, render: (value) => escapeHtml(formatSoaPercentCell(value)) }
+          ? { key, label: key, render: (value) => escapeHtml(formatPercentCell(value)) }
           : { key, label: key }
       );
     const rowsWithId = rows.map((row, i) => ({ ...row, id: String(i) }));
@@ -2031,7 +2032,7 @@ function openSoaRowDetail(label, row, columns = [], checklistHtml = "") {
           <span class="client-file__label">${escapeHtml(key)}</span>
           <span class="client-file__value">${
             /^soa$/i.test(key)
-              ? escapeHtml(formatSoaPercentCell(value))
+              ? escapeHtml(formatPercentCell(value))
               : escapeHtml(value === null || value === undefined || value === "" ? "-" : formatNumericDisplay(value) ?? stripMidnightTime(value))
           }</span>
         </div>`
@@ -2576,12 +2577,12 @@ function rowStatusDetailHtml(trade, columns) {
     .map((e) => {
       const diffText = e.diff === null || e.diff === undefined ? "-" : NUMBER_FORMAT_2DP.format(e.diff);
       const diffClass = typeof e.diff === "number" && e.diff !== 0 ? " is-diff-negative" : "";
-      // Same "SOA is a percent" rule as the XIRR table itself (formatSoaPercentCell) -
+      // Same "SOA is a percent" rule as the XIRR table itself (formatPercentCell) -
       // this is the Fund-vs-Auditor breakdown for a row that failed validation, and SOA
       // is the only field name it's ever shown for that's actually a rate.
       const isSoaField = /^soa$/i.test(e.field);
-      const originalText = isSoaField ? formatSoaPercentCell(e.original) : formatNumericDisplay(e.original) ?? (e.original || "-");
-      const auditorText = isSoaField ? formatSoaPercentCell(e.auditor) : formatNumericDisplay(e.auditor) ?? (e.auditor || "-");
+      const originalText = isSoaField ? formatPercentCell(e.original) : formatNumericDisplay(e.original) ?? (e.original || "-");
+      const auditorText = isSoaField ? formatPercentCell(e.auditor) : formatNumericDisplay(e.auditor) ?? (e.auditor || "-");
       return `
       <tr>
         <td>${escapeHtml(e.field)}</td>
@@ -2718,6 +2719,10 @@ function buildManagementFeesSummary(rows) {
     // An investor is "incorrect" if any of its day rows failed auditor validation - that's
     // the thing an admin scanning this list actually wants to spot, not a per-row detail.
     group.hasIncorrect = group.rows.some((r) => r.__status === "incorrect");
+    // Summary-row Status dot: red if any day failed, else green if at least one day was
+    // actually checked, else blank (statusDotHtml already renders "" for null) - same as
+    // a row that was never cross-checked against an auditor file anywhere else in the app.
+    group.overallStatus = group.hasIncorrect ? "incorrect" : group.rows.some((r) => r.__status === "correct") ? "correct" : null;
   }
   return Array.from(groups.values()).sort(
     (a, b) => Number(a.investorCode) - Number(b.investorCode) || String(a.classCode).localeCompare(String(b.classCode))
@@ -2734,6 +2739,7 @@ function managementFeesSummaryRowHtml(g, index) {
         <td>${escapeHtml(NUMBER_FORMAT_2DP.format(g.totalFeeAmount))}</td>
         <td>${escapeHtml(NUMBER_FORMAT_2DP.format(g.totalGstAmount))}</td>
         <td>${escapeHtml(NUMBER_FORMAT_2DP.format(g.totalFeeWithGst))}</td>
+        <td>${statusDotHtml(g.overallStatus, index)}</td>
       </tr>`;
 }
 
@@ -2771,6 +2777,7 @@ function renderManagementFeesSummary(view, fund, label, columns, rows, mappings,
             <th>Fees Amount</th>
             <th>GST Amount</th>
             <th>Fee with GST</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody id="mgmt-fees-table-body"></tbody>
@@ -2810,7 +2817,7 @@ function renderManagementFeesSummary(view, fund, label, columns, rows, mappings,
     }`;
     tbody.innerHTML =
       pageItems.map((g) => managementFeesSummaryRowHtml(g, groups.indexOf(g))).join("") ||
-      `<tr><td class="empty-state" colspan="7">No matching ${escapeHtml(label)} rows found.</td></tr>`;
+      `<tr><td class="empty-state" colspan="8">No matching ${escapeHtml(label)} rows found.</td></tr>`;
 
     tbody.querySelectorAll("tr[data-group-index]").forEach((tr) => {
       tr.addEventListener("click", () => {
@@ -2913,7 +2920,7 @@ async function openClientFile(clientId) {
         ${field("Commitment Reduced", formatCurrency(c.commitment_reduced), true)}
         ${field("Total Commitment", formatCurrency(c.total_commitment), true)}
         ${field("Initial Contribution", formatCurrency(c.initial_contribution), true)}
-        ${field("Management Fees", c.management_fees)}
+        ${field("Management Fees", formatPercentCell(c.management_fees))}
 
         <hr class="client-file__divider" />
         <span class="client-file__section-title">Distributor &amp; Other</span>
