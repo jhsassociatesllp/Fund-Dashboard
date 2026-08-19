@@ -2679,10 +2679,21 @@ a.tab-button {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  background: var(--blue-100);
-  border: 1px solid var(--blue-700);
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-left: 3px solid var(--blue-700);
   border-radius: var(--radius-md);
   padding: 0.9rem 1rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* Sidebar-only: several of these stack vertically (Trade Details/Validating Document/
+   Test Procedure, then Correct/Incorrect below them) and need a visible gap between them.
+   Scoped away from .validated-checklist's own .side-panel__validation reuse, which lays
+   them out as flex-wrap row items with its own gap - an extra margin-top here would only
+   pad wrapped rows unevenly there. */
+.side-panel__sidebar .side-panel__validation + .side-panel__validation {
+  margin-top: 0.75rem;
 }
 
 .side-panel__validation-label {
@@ -2693,11 +2704,16 @@ a.tab-button {
   font-weight: 600;
 }
 
+/* font-body (not font-display) and a relaxed line-height - these used to only ever hold
+   a short document name (reads fine as a little serif headline), but Test Procedure can
+   be a full sentence, which the display serif renders too heavy/headline-like for. */
 .side-panel__validation-value {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.45;
   color: var(--navy-900);
+  word-break: break-word;
 }
 
 .side-panel__validation--errors {
