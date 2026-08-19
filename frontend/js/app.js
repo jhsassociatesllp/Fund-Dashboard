@@ -2267,11 +2267,17 @@ function renderPerformanceFeeTable(view, fund, label, columns, rows, checklistHt
 // (validatedChecklistHtml) as the sidebar instead of a single per-type "Validated From"
 // document - Performance Fees has no per-row grouping value (like Instrument Type) to
 // look a document up by, just one fund-wide checklist.
+// Hidden from the investor detail table - internal working columns rather than anything
+// an investor needs to see (the fund's own contribution bookkeeping and the raw pass/
+// fail flag Status already summarizes as a dot).
+const PERFORMANCE_FEE_HIDDEN_DETAIL_COLUMNS = /^(contribution amount|contribution date|updated hwm|formula check)$/i;
+
 function openPerformanceFeeInvestorDetail(label, investorName, columns, investorRows, checklistHtml) {
+  const visibleColumns = columns.filter((c) => !PERFORMANCE_FEE_HIDDEN_DETAIL_COLUMNS.test(c.label));
   const hasValidation = investorRows.some((r) => r.__status === "correct" || r.__status === "incorrect");
   const detailColumns = hasValidation
-    ? [...columns, { key: "__status", label: "Status", render: (value, record) => statusDotHtml(value, investorRows.indexOf(record)) }]
-    : columns;
+    ? [...visibleColumns, { key: "__status", label: "Status", render: (value, record) => statusDotHtml(value, investorRows.indexOf(record)) }]
+    : visibleColumns;
   const bodyHtml = staticTableHtml(detailColumns, investorRows, "No rows found.", true);
   const sidebarHtml = `${checklistHtml || ""}<div id="side-panel-row-errors"></div>`;
 
