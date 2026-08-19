@@ -4,8 +4,15 @@ Fund Dashboard - FastAPI backend.
 Exposes a small REST API backed by MongoDB and serves the static
 frontend (HTML/CSS/JS) from the same process for simplicity.
 
-Run with:
-    uvicorn main:app --reload --host 0.0.0.0 --port 8000
+This module uses relative imports (`from . import file_import`, `from .database
+import ...`) since `backend/` is a real package (see backend/__init__.py) - it must be
+run/imported as part of that package, not as a standalone script. Running `python
+main.py` directly, or launching it from VS Code's "Run Python File" ▷ button, executes
+it as a top-level module with no package context and fails with "attempted relative
+import with no known parent package".
+
+Run from the project root (not from inside backend/):
+    uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 """
 
 import os
@@ -103,40 +110,56 @@ app.add_middleware(
 )
 
 
+def _as_text(value, default: str = "-") -> str:
+    """Coerce a Mongo field to the plain string ClientRecord expects.
+
+    Client Master rows normally reach the DB through file_import._text(),
+    which already stores everything as str. But some records (e.g. ones
+    inserted directly via Compass/mongoimport rather than the upload
+    endpoint) end up with genuinely numeric BSON types - int, Int64,
+    Decimal128 - for columns like mobile_no or bank_account_no. Pydantic
+    v2 won't auto-coerce those to str, so a single such record 500s the
+    whole /clients list for that fund. Cast defensively here instead.
+    """
+    if value is None:
+        return default
+    return str(value).strip() or default
+
+
 def client_to_record(doc) -> ClientRecord:
     return ClientRecord(
         id=str(doc["_id"]),
         fund_id=doc["fund_id"],
-        investor_name=doc["investor_name"],
-        client_class=doc["client_class"],
-        management_fees=doc["management_fees"],
-        client_code=doc["client_code"],
-        dp_id=doc["dp_id"],
-        im_signing_date=doc["im_signing_date"],
-        status=doc["status"],
-        nominee_1_name=doc["nominee_1_name"],
-        dob_or_incorporation_date=doc["dob_or_incorporation_date"],
-        joint_holder_name=doc["joint_holder_name"],
-        mobile_no=doc["mobile_no"],
-        email_id=doc["email_id"],
-        address_1=doc["address_1"],
-        city=doc["city"],
-        pin_code=doc["pin_code"],
-        country=doc["country"],
-        bank_name=doc["bank_name"],
-        bank_account_no=doc["bank_account_no"],
-        bank_account_type=doc["bank_account_type"],
-        bank_ifsc_code=doc["bank_ifsc_code"],
+        investor_name=_as_text(doc["investor_name"]),
+        client_class=_as_text(doc["client_class"]),
+        management_fees=_as_text(doc["management_fees"]),
+        client_code=_as_text(doc["client_code"]),
+        dp_id=_as_text(doc["dp_id"]),
+        im_signing_date=_as_text(doc["im_signing_date"]),
+        status=_as_text(doc["status"]),
+        nominee_1_name=_as_text(doc["nominee_1_name"]),
+        dob_or_incorporation_date=_as_text(doc["dob_or_incorporation_date"]),
+        joint_holder_name=_as_text(doc["joint_holder_name"]),
+        mobile_no=_as_text(doc["mobile_no"]),
+        email_id=_as_text(doc["email_id"]),
+        address_1=_as_text(doc["address_1"]),
+        city=_as_text(doc["city"]),
+        pin_code=_as_text(doc["pin_code"]),
+        country=_as_text(doc["country"]),
+        bank_name=_as_text(doc["bank_name"]),
+        bank_account_no=_as_text(doc["bank_account_no"]),
+        bank_account_type=_as_text(doc["bank_account_type"]),
+        bank_ifsc_code=_as_text(doc["bank_ifsc_code"]),
         commitment_amount=doc["commitment_amount"],
         top_up_amount=doc["top_up_amount"],
         commitment_reduced=doc["commitment_reduced"],
         total_commitment=doc["total_commitment"],
         initial_contribution=doc["initial_contribution"],
-        distributor_name=doc["distributor_name"],
-        distributor_code=doc["distributor_code"],
-        side_letters=doc["side_letters"],
-        remarks=doc["remarks"],
-        scheme=doc["scheme"],
+        distributor_name=_as_text(doc["distributor_name"]),
+        distributor_code=_as_text(doc["distributor_code"]),
+        side_letters=_as_text(doc["side_letters"]),
+        remarks=_as_text(doc["remarks"]),
+        scheme=_as_text(doc["scheme"]),
     )
 
 
