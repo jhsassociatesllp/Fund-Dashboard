@@ -535,7 +535,7 @@ function tableSectionHtml(prefix, columns, placeholder, narrow, hideDownload, ex
 function statusFilterSelectHtml(prefix) {
   return `
     <select id="${prefix}-status-filter" class="search-input status-filter-select" aria-label="Filter by validation status">
-      <option value="all">All statuses</option>
+      <option value="all">All Status</option>
       <option value="correct">Correct only</option>
       <option value="incorrect">Incorrect only</option>
     </select>
@@ -2629,7 +2629,7 @@ function renderManagementFeesSummary(view, fund, label, columns, rows, mappings,
       ${dateFilterHtml}
       <div class="table-toolbar__right">
         <select id="mgmt-fees-status-filter" class="search-input status-filter-select" aria-label="Filter by validation status">
-          <option value="all">All statuses</option>
+          <option value="all">All Status</option>
           <option value="correct">Correct only</option>
           <option value="incorrect">Incorrect only</option>
         </select>
