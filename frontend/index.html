@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fund Administration Portal</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="app-header">
+  <button type="button" class="app-header__menu-btn" id="primary-menu-btn" aria-label="Open menu" aria-haspopup="true" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+  </button>
+  <button type="button" class="app-header__brand app-header__brand--link" id="brand-home-btn" aria-label="Go to Dashboard">
+    <img src="assets/logo.svg" alt="Company logo" class="app-header__logo" />
+    <div class="app-header__wordmark">
+      <span class="app-header__company">FundPulse<span class="app-header__company-badge">360</span></span>
+      <span class="app-header__tagline"></span>
+    </div>
+  </button>
+</header>
+
+<div class="trail" id="trail" aria-label="Navigation trail"></div>
+
+<div class="nav-drawer-backdrop" id="nav-drawer-backdrop"></div>
+<aside class="nav-drawer" id="nav-drawer" aria-hidden="true">
+  <div class="nav-drawer__header">
+    <div class="nav-drawer__brand">
+      <img src="assets/logo.svg" alt="Company logo" class="nav-drawer__logo" />
+      <span class="nav-drawer__company">FundPulse<span class="nav-drawer__company-badge">360</span></span>
+    </div>
+    <button type="button" class="nav-drawer__close" id="nav-drawer-close" aria-label="Close menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+  </div>
+  <nav class="nav-drawer__list">
+    <button class="nav-drawer__item is-active" data-tab="dashboard">Dashboard</button>
+    <button class="nav-drawer__item" data-tab="fund-name">Fund Name</button>
+    <button class="nav-drawer__item" data-tab="fund-scheme">Fund Scheme</button>
+  </nav>
+</aside>
+
+<main class="app-main" id="app-main">
+  <!-- View content injected by app.js -->
+</main>
+
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal__header">
+      <h2 id="modal-title">Client File</h2>
+      <button class="modal__close" id="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal__body" id="modal-body"></div>
+  </div>
+</div>
+
+<div class="side-panel-backdrop" id="side-panel-backdrop">
+  <aside class="side-panel" id="side-panel" role="dialog" aria-modal="true" aria-labelledby="side-panel-title">
+    <div class="side-panel__content">
+      <div class="side-panel__header">
+        <div class="side-panel__header-text">
+          <span class="side-panel__eyebrow" id="side-panel-eyebrow"></span>
+          <h2 id="side-panel-title"></h2>
+        </div>
+        <button class="modal__close" id="side-panel-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="side-panel__body" id="side-panel-body"></div>
+    </div>
+    <div class="side-panel__resizer" id="side-panel-resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar"></div>
+    <div class="side-panel__sidebar" id="side-panel-sidebar"></div>
+  </aside>
+</div>
+
+<footer class="app-footer">
+  <span>Internal use only. Data shown is illustrative sample data.</span>
+</footer>
+
+<script src="js/app.js"></script>
+</body>
+</html>

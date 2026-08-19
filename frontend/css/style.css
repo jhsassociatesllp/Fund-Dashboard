@@ -1,0 +1,2814 @@
+/* ==========================================================================
+   Design tokens
+   ========================================================================== */
+:root {
+  --navy-900: #0A1F44;
+  --blue-700: #16407A;
+  --blue-100: #EAF1FB;
+  --red-600: #C8102E;
+  --red-700: #A50D25;
+  --red-100: #FBEAEC;
+  --white: #FFFFFF;
+  --ink-900: #1C1F26;
+  --gray-500: #6B7280;
+  --gray-200: #E5E8EC;
+  --gray-100: #F4F6F8;
+
+  --font-display: "IBM Plex Serif", Georgia, serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --shadow-card: 0 1px 2px rgba(10, 31, 68, 0.06), 0 1px 3px rgba(10, 31, 68, 0.08);
+  --shadow-modal: 0 12px 40px rgba(10, 31, 68, 0.25);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--gray-100);
+  color: var(--ink-900);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--red-600);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+.app-header {
+  background: linear-gradient(120deg, #081733 0%, var(--navy-900) 45%, #0D2555 100%);
+  border-bottom: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 2rem;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+/* Two-tone accent line replaces the old flat red border - a soft glow in the middle
+   keeps it from reading as a plain rule under the navy gradient above it. */
+.app-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--red-700) 0%, var(--red-600) 20%, #E8536A 50%, var(--red-600) 80%, var(--red-700) 100%);
+}
+
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.app-header__brand--link {
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.app-header__brand--link:hover .app-header__company {
+  color: #D9E4F5;
+}
+
+.app-header__brand--link:hover .app-header__logo {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(200, 16, 46, 0.35);
+}
+
+.app-header__logo {
+  height: 38px;
+  width: auto;
+  flex-shrink: 0;
+  background: var(--white);
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(200, 16, 46, 0.18);
+  transition: box-shadow 0.15s ease;
+}
+
+.app-header__wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  padding-left: 0.85rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.app-header__company {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: 0.01em;
+  color: var(--white);
+}
+
+/* "360" reads as a distinct mark rather than trailing text - ties the wordmark back to
+   the brand's red accent instead of just repeating the white serif type. */
+.app-header__company-badge {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--red-600), var(--red-700));
+  padding: 0.22rem 0.55rem;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.app-header__tagline {
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8CA1C7;
+  margin-top: 0.2rem;
+}
+
+.app-header__tabs {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.tab-button {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #C7D4E8;
+  padding: 0.6rem 1.15rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tab-button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
+}
+
+.tab-button.is-active {
+  background: var(--white);
+  color: var(--navy-900);
+  font-weight: 600;
+}
+
+a.tab-button {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Primary navigation (index.html) - Dashboard is the home page; this hamburger button
+   opens the .nav-drawer slide-in panel (below) holding Fund Name/Fund Scheme, instead
+   of always-visible tabs. */
+.app-header__menu-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--white);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.app-header__menu-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.app-header__menu-btn:hover,
+.app-header__menu-btn[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+/* Full-height slide-in nav drawer + its backdrop. */
+.nav-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 31, 68, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 90;
+}
+
+.nav-drawer-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nav-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: min(300px, 85vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  box-shadow: var(--shadow-modal);
+  transform: translateX(-100%);
+  transition: transform 0.22s ease;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.nav-drawer.is-open {
+  transform: translateX(0);
+}
+
+.nav-drawer__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(120deg, #081733 0%, var(--navy-900) 45%, #0D2555 100%);
+}
+
+.nav-drawer__header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--red-700) 0%, var(--red-600) 35%, #E8536A 55%, var(--red-600) 75%, var(--red-700) 100%);
+}
+
+.nav-drawer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.nav-drawer__logo {
+  height: 30px;
+  width: auto;
+  flex-shrink: 0;
+  background: var(--white);
+  padding: 0.28rem 0.55rem;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(200, 16, 46, 0.18);
+}
+
+.nav-drawer__company {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--white);
+  white-space: nowrap;
+}
+
+.nav-drawer__company-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--red-600), var(--red-700));
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.nav-drawer__close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--white);
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.nav-drawer__close svg {
+  width: 17px;
+  height: 17px;
+}
+
+.nav-drawer__close:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.nav-drawer__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.5rem 1rem 1.5rem;
+}
+
+.nav-drawer__item {
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.1rem;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--ink-900);
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.nav-drawer__item:hover {
+  background: var(--gray-100);
+}
+
+.nav-drawer__item.is-active {
+  background: var(--blue-100);
+  border-left-color: var(--blue-700);
+  color: var(--navy-900);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Trail (signature element: ledger-style drill path)
+   ========================================================================== */
+.trail {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 0.7rem 2rem;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.trail__node {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: none;
+  border: none;
+  color: var(--gray-500);
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+}
+
+.trail__node::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  border: 1px solid var(--gray-500);
+}
+
+.trail__node.is-current {
+  color: var(--navy-900);
+  font-weight: 600;
+}
+
+.trail__node.is-current::before {
+  background: var(--red-600);
+  border-color: var(--red-600);
+}
+
+.trail__node.is-link {
+  cursor: pointer;
+  color: var(--blue-700);
+}
+
+.trail__node.is-link:hover {
+  text-decoration: underline;
+}
+
+.trail__sep {
+  color: var(--gray-200);
+  padding: 0 0.15rem;
+}
+
+/* ==========================================================================
+   Main content
+   ========================================================================== */
+.app-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: calc(100vh - 220px);
+}
+
+.view-heading {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* Icon-only - just the arrow, no label (an arrow reads as "go back" on its own). */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.9rem;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--blue-700);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.back-btn:hover {
+  background: var(--blue-100);
+  border-color: var(--blue-700);
+  color: var(--red-600);
+  transform: translateX(-2px);
+}
+
+.btn.back-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.view-heading h1 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--navy-900);
+  margin: 0;
+}
+
+.view-heading p {
+  margin: 0;
+  color: var(--gray-500);
+  font-size: 0.9rem;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.entity-card {
+  position: relative;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-left: 3px solid var(--blue-700);
+  border-radius: var(--radius-md);
+  padding: 1.2rem 1.3rem;
+  text-align: left;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+/* A soft navy wash creeping in from the top-right on hover - reinforces the lift/shadow
+   without needing a second accent color competing with the left bar's blue-to-red swap. */
+.entity-card::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -30%;
+  width: 65%;
+  height: 90%;
+  background: radial-gradient(circle, rgba(22, 64, 122, 0.06) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.entity-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(10, 31, 68, 0.16);
+  border-left-color: var(--red-600);
+  border-color: var(--gray-200);
+}
+
+.entity-card:hover::after {
+  opacity: 1;
+}
+
+.entity-card__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  font-weight: 600;
+}
+
+.entity-card__eyebrow::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--red-600);
+}
+
+.entity-card__title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--navy-900);
+}
+
+/* Scoped to cards in a grid (not the bare .entity-card__title also reused as a plain
+   page heading elsewhere): reserves space for 2 lines so a long name wrapping to 2
+   lines doesn't make its whole grid row taller than sibling rows whose names fit on 1. */
+.entity-card .entity-card__title {
+  line-height: 1.3;
+  min-height: 2.6em;
+}
+
+.entity-card__meta {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--gray-500);
+}
+
+.status-pill {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.status-pill--verified {
+  background: #E6F4EA;
+  color: #1E7A34;
+}
+
+.status-pill--pending {
+  background: #FDEDEC;
+  color: var(--red-700);
+}
+
+/* Corpus Movement register: each investor row has two independently-clickable pills
+   (rather than the row itself being clickable) since Corpus In and Corpus Out are
+   separate uploads with different columns - clicking one opens just that file's rows
+   for the investor (see openInvestorMovementDetail). */
+.movement-pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  margin-right: 0.4rem;
+}
+
+.movement-pill:last-child {
+  margin-right: 0;
+}
+
+.movement-pill--in {
+  background: var(--blue-100);
+  color: var(--blue-700);
+}
+
+.movement-pill--in:hover {
+  background: #D8E6F8;
+}
+
+.movement-pill--out {
+  background: var(--red-100);
+  color: var(--red-700);
+}
+
+.movement-pill--out:hover {
+  background: #F6D6DA;
+}
+
+/* Status column dot (Realised Gain trade detail): the verdict itself ("Correct" /
+   "Incorrect") is shown in the sidebar on click, so the table only needs a compact
+   colored indicator rather than a full text pill. */
+.status-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+
+.status-dot--correct {
+  background: #1E7A34;
+}
+
+.status-dot--incorrect {
+  background: var(--red-700);
+}
+
+.status-dot:hover,
+.status-dot:focus-visible {
+  outline: 2px solid var(--gray-500);
+  outline-offset: 2px;
+}
+
+.side-panel__validation-value--correct {
+  color: #1E7A34;
+}
+
+.side-panel__validation-value--incorrect {
+  color: var(--red-700);
+}
+
+.side-panel__validation--correct {
+  margin-top: 1rem;
+  background: #E6F4EA;
+  border-color: #1E7A34;
+}
+
+.side-panel__validation--correct .side-panel__validation-label {
+  color: #1E7A34;
+}
+
+.side-panel__validation-note {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--gray-500);
+}
+
+.validation-error-table td,
+.validation-error-table th {
+  white-space: nowrap;
+}
+
+/* Unlike the trade table it sits below, this one should fill whatever width the
+   sidebar is dragged to rather than shrinking to its own content (which left a
+   dead gap on the right at wider sidebar widths). */
+.validation-error-table.client-table--compact {
+  width: 100%;
+}
+
+.validation-error-table td.is-diff-negative {
+  color: var(--red-700);
+}
+
+.empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--gray-500);
+  font-size: 0.92rem;
+}
+
+.loading-state {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--gray-500);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.error-state {
+  padding: 1.2rem 1.4rem;
+  background: #FDEDEC;
+  border: 1px solid #F3C6CB;
+  border-radius: var(--radius-md);
+  color: var(--red-700);
+  font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  color: var(--navy-900);
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  border-color: var(--blue-700);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--navy-900);
+  border-color: var(--navy-900);
+  color: var(--white);
+}
+
+.btn--primary:hover {
+  background: var(--blue-700);
+  border-color: var(--blue-700);
+}
+
+.btn--danger {
+  background: var(--red-600);
+  border-color: var(--red-600);
+  color: var(--white);
+}
+
+.btn--danger:hover {
+  background: var(--red-700);
+  border-color: var(--red-700);
+}
+
+/* ==========================================================================
+   Admin Portal: create fund, upload Client Master / Corpus Movement
+   ========================================================================== */
+.add-fund-form__label {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  margin-bottom: 0.4rem;
+}
+
+.add-fund-form input[type="text"] {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: var(--ink-900);
+  margin-bottom: 1rem;
+}
+
+.add-fund-form input[type="text"]:focus {
+  outline: none;
+  border-color: var(--blue-700);
+  box-shadow: 0 0 0 3px rgba(22, 64, 122, 0.15);
+}
+
+.add-fund-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.fund-admin-card {
+  position: relative;
+}
+
+.fund-admin-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  cursor: pointer;
+  padding-right: 1.4rem;
+}
+
+.fund-admin-card__delete {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--gray-500);
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.fund-admin-card__delete svg {
+  width: 15px;
+  height: 15px;
+}
+
+.fund-admin-card:hover .fund-admin-card__delete,
+.fund-admin-card__delete:focus-visible {
+  opacity: 1;
+}
+
+.fund-admin-card__delete:hover {
+  background: #FDEDEC;
+  color: var(--red-700);
+}
+
+.fund-admin-card__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.fund-admin-card__confirm p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink-900);
+  line-height: 1.5;
+}
+
+.fund-admin-card__confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.fund-admin-card__confirm-actions .btn {
+  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem;
+}
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.upload-grid + .upload-group__title {
+  margin-top: 1.75rem;
+}
+
+.upload-group__title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--navy-900);
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.upload-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.upload-card:hover {
+  box-shadow: 0 8px 24px rgba(10, 31, 68, 0.1);
+}
+
+.upload-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.upload-card__icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--blue-100);
+  color: var(--blue-700);
+}
+
+.upload-card__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.upload-card__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.upload-card__title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--navy-900);
+}
+
+.upload-card__meta {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--gray-500);
+}
+
+.upload-card__actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.upload-card__submit {
+  align-self: flex-start;
+}
+
+.upload-card__hint {
+  font-size: 0.78rem;
+  color: var(--gray-500);
+  margin: -0.5rem 0 0;
+}
+
+.upload-card__hint--note {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  background: var(--blue-100);
+  border-radius: var(--radius-sm);
+  color: var(--blue-700);
+  font-weight: 500;
+}
+
+.validation-doc-open-btn {
+  align-self: flex-start;
+  margin-top: -0.4rem;
+}
+
+.validation-doc-open-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.validation-doc-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.validation-doc-editor__hint {
+  margin: 0;
+}
+
+.validation-doc-list {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.validation-doc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 0.6rem 1rem;
+  align-items: center;
+  padding: 0.55rem 0.75rem;
+  font-family: var(--font-body);
+}
+
+.validation-doc-row + .validation-doc-row {
+  border-top: 1px solid var(--gray-100);
+}
+
+.validation-doc-row:not(.validation-doc-row--head):hover {
+  background: var(--gray-100);
+}
+
+.validation-doc-row--head {
+  background: var(--gray-100);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--gray-500);
+}
+
+/* Management Fees' editor identifies each row by three columns (Investor Code, Class
+   Code, Fees %) instead of the single Type column the other categories use. */
+.validation-doc-row--management-fees {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 0.8fr) minmax(0, 0.7fr) minmax(0, 1.3fr);
+}
+
+.validation-doc-row__type {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.validation-doc-row__type-name {
+  font-size: 0.85rem;
+  color: var(--ink-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.validation-doc-input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  color: var(--ink-900);
+}
+
+.validation-doc-input:focus {
+  outline: none;
+  border-color: var(--blue-700);
+  box-shadow: 0 0 0 3px rgba(22, 64, 122, 0.15);
+}
+
+.badge-new {
+  flex-shrink: 0;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: var(--blue-100);
+  color: var(--blue-700);
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.validation-doc-add-btn {
+  margin: 0.75rem 0;
+  font-size: 0.82rem;
+  padding: 0.5rem 0.9rem;
+}
+
+.validation-doc-editor__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.validation-doc-editor__status {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+}
+
+/* Dropzone (custom file picker) */
+.dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  text-align: center;
+  padding: 1.5rem 1rem;
+  border: 1.5px dashed var(--gray-200);
+  border-radius: var(--radius-md);
+  background: var(--gray-100);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.dropzone:hover {
+  border-color: var(--blue-700);
+  background: var(--blue-100);
+}
+
+.dropzone--active {
+  border-color: var(--red-600);
+  background: var(--blue-100);
+}
+
+.dropzone--has-file {
+  border-style: solid;
+  border-color: #1E7A34;
+  background: #E6F4EA;
+}
+
+.dropzone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dropzone__icon {
+  color: var(--blue-700);
+  opacity: 0.8;
+}
+
+.dropzone__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.dropzone--has-file .dropzone__icon {
+  color: #1E7A34;
+}
+
+.dropzone__text {
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--ink-900);
+  word-break: break-all;
+}
+
+.dropzone__hint {
+  font-size: 0.72rem;
+  color: var(--gray-500);
+}
+
+.upload-status {
+  font-size: 0.82rem;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  line-height: 1.5;
+}
+
+.upload-status--success {
+  background: #E6F4EA;
+  color: #1E7A34;
+}
+
+.upload-status--error {
+  background: #FDEDEC;
+  color: var(--red-700);
+}
+
+.upload-status--pending {
+  background: var(--gray-100);
+  color: var(--gray-500);
+  font-family: var(--font-mono);
+}
+
+.upload-status ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+}
+
+/* ==========================================================================
+   Company sub-tabs (Client Master / Corpus Movement)
+   ========================================================================== */
+.subtabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.subtab-button {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--gray-500);
+  padding: 0.55rem 0.2rem;
+  margin-right: 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.subtab-button:hover {
+  color: var(--navy-900);
+}
+
+.subtab-button.is-active {
+  color: var(--navy-900);
+  font-weight: 600;
+  border-bottom-color: var(--red-600);
+}
+
+/* ==========================================================================
+   NAV tab: Income / Expense hover flyout menu
+   ========================================================================== */
+.nav-menu__hint {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--gray-500);
+}
+
+.nav-menu__hint strong {
+  color: var(--ink-900);
+}
+
+.nav-menu {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.nav-menu__item {
+  position: relative;
+}
+
+/* Invisible bridge so the pointer stays "inside" the item (and the flyout stays open)
+   while crossing the visual gap between the card and the flyout below it. Without this,
+   :hover drops the instant the pointer leaves the card's box, closing the menu before
+   the pointer reaches a leaf button. */
+.nav-menu__item::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 0.5rem;
+}
+
+.nav-menu__card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 230px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 0.9rem 1.15rem;
+  cursor: default;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.nav-menu__item:hover .nav-menu__card,
+.nav-menu__item:focus-within .nav-menu__card {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(10, 31, 68, 0.14);
+  border-color: var(--blue-700);
+}
+
+.nav-menu__icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+}
+
+.nav-menu__icon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.nav-menu__card--income .nav-menu__icon {
+  background: #E6F4EA;
+  color: #1E7A34;
+}
+
+.nav-menu__card--expense .nav-menu__icon {
+  background: #FDEDEC;
+  color: var(--red-700);
+}
+
+.nav-menu__card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.nav-menu__label {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--navy-900);
+}
+
+.nav-menu__count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--gray-500);
+}
+
+/* SOA menu: Transaction/Closing/XIRR are already leaf-level (no Income/Expense-style
+   grouping above them), so each card is directly clickable - .nav-menu__item's hover
+   flyout isn't used here, just .nav-menu__card's own look plus a pressable/active state. */
+.nav-menu__card--clickable {
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nav-menu__card--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(10, 31, 68, 0.14);
+  border-color: var(--blue-700);
+}
+
+.nav-menu__card--clickable.is-active {
+  border-color: var(--red-600);
+  box-shadow: 0 10px 26px rgba(10, 31, 68, 0.14);
+}
+
+.nav-menu__card--transaction .nav-menu__icon {
+  background: var(--blue-100);
+  color: var(--blue-700);
+}
+
+.nav-menu__card--closing .nav-menu__icon {
+  background: var(--gray-100);
+  color: var(--navy-900);
+}
+
+.nav-menu__card--xirr .nav-menu__icon {
+  background: #E6F4EA;
+  color: #1E7A34;
+}
+
+.nav-menu__chevron {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--gray-500);
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.nav-menu__item:hover .nav-menu__chevron,
+.nav-menu__item:focus-within .nav-menu__chevron {
+  transform: rotate(90deg);
+  color: var(--blue-700);
+}
+
+.nav-menu__flyout {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 10;
+  min-width: 270px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-modal);
+  padding: 0.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+
+.nav-menu__item:hover .nav-menu__flyout,
+.nav-menu__item:focus-within .nav-menu__flyout {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.nav-menu__flyout-title {
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--gray-500);
+  padding: 0.4rem 0.7rem 0.35rem;
+}
+
+.nav-menu__leaf {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--ink-900);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.nav-menu__leaf-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  transition: background 0.12s ease;
+}
+
+.nav-menu__leaf:hover {
+  background: var(--blue-100);
+  color: var(--blue-700);
+}
+
+.nav-menu__leaf:hover .nav-menu__leaf-dot {
+  background: var(--blue-700);
+}
+
+.nav-menu__leaf.is-active {
+  background: var(--navy-900);
+  color: var(--white);
+}
+
+.nav-menu__leaf.is-active .nav-menu__leaf-dot {
+  background: var(--white);
+}
+
+/* ==========================================================================
+   Corpus Movement summary chips
+   ========================================================================== */
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-bottom: 1.1rem;
+}
+
+.stat-chip {
+  flex: 1 1 180px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-left: 3px solid var(--blue-700);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.stat-chip__label {
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  font-weight: 600;
+}
+
+.stat-chip__value {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--navy-900);
+}
+
+.stat-chip--in {
+  border-left-color: var(--blue-700);
+}
+
+.stat-chip--out {
+  border-left-color: var(--red-600);
+}
+
+.stat-chip--net {
+  border-left-color: var(--navy-900);
+}
+
+/* Icon-badge variant (Corpus Movement's Total In / Total Out / Net Movement row) - an
+   opt-in modifier rather than changed base .stat-chip styling, since that class is also
+   reused (without an icon) by the SOA Transaction summary and the Corpus investor-detail
+   modal's single stat chip. */
+.stat-chip--icon {
+  flex: 1 1 200px;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.9rem;
+  border-left: none;
+  padding: 0.9rem 1.1rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.stat-chip--icon:hover {
+  box-shadow: 0 6px 16px rgba(10, 31, 68, 0.12);
+  transform: translateY(-1px);
+}
+
+/* Dashboard's Investor Snapshot row only (see .dashboard-stat-row in app.js) - not the
+   base .stat-chip--icon, since that's shared with Corpus's Total In/Out/Net row, whose
+   own blue/red/navy icon coloring per chip already carries the accent it needs. */
+.dashboard-stat-row .stat-chip--icon {
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid rgba(200, 16, 46, 0.28);
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+.dashboard-stat-row .stat-chip--icon:hover {
+  border-color: rgba(200, 16, 46, 0.55);
+}
+
+.dashboard-stat-row .stat-chip--icon::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--red-700) 0%, var(--red-600) 35%, #E8536A 55%, var(--red-600) 75%, var(--red-700) 100%);
+}
+
+.stat-chip--icon .stat-chip__value {
+  font-size: 1.2rem;
+  white-space: nowrap;
+}
+
+.stat-chip__icon {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-chip__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.stat-chip__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.stat-chip--in .stat-chip__icon {
+  background: var(--blue-100);
+  color: var(--blue-700);
+}
+
+.stat-chip--out .stat-chip__icon {
+  background: var(--red-100);
+  color: var(--red-600);
+}
+
+.stat-chip--net .stat-chip__icon {
+  background: var(--navy-900);
+  color: var(--white);
+}
+
+/* Corpus In/Out investor detail modal: the fixed "Validated From" checklist (see
+   CORPUS_VALIDATION_TYPES), reusing the side panel's .side-panel__validation card in a
+   wrapping row since the modal has no separate sidebar to put them in. */
+.validated-checklist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1.1rem;
+}
+
+.validated-checklist .side-panel__validation {
+  flex: 1 1 160px;
+}
+
+/* Small caption introducing a checklist/validation block lower in a modal or side
+   panel (e.g. SOA Closing's row detail, where it sits below the row's own Status box). */
+.side-panel__section-title {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+/* ==========================================================================
+   Client register table (Fund Name -> Company -> Clients)
+   ========================================================================== */
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.search-field {
+  position: relative;
+  flex: 1 1 320px;
+  max-width: 420px;
+}
+
+/* On toolbars that also carry an inline date filter (see dateFilterInlineHtml), the
+   search field needs to give up some of its max-width so search + dates + count +
+   download all still fit on one line instead of wrapping. */
+.table-toolbar:has(.table-toolbar__dates) .search-field {
+  flex-basis: 220px;
+  max-width: 260px;
+}
+
+.search-field::before {
+  content: "";
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--gray-500);
+  border-radius: 50%;
+  transform: translateY(-60%);
+  pointer-events: none;
+}
+
+.search-field::after {
+  content: "";
+  position: absolute;
+  left: 1.28rem;
+  top: 50%;
+  width: 6px;
+  height: 2px;
+  background: var(--gray-500);
+  transform: translateY(35%) rotate(45deg);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.55rem 0.85rem 0.55rem 2.1rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--ink-900);
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--blue-700);
+  box-shadow: 0 0 0 3px rgba(22, 64, 122, 0.15);
+}
+
+.search-input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+.table-toolbar__count {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--blue-700);
+  white-space: nowrap;
+  background: var(--blue-100);
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+}
+
+.table-toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+/* Inline date filter sitting inside a table's own .table-toolbar row, between the
+   search field and the record count/download button - see dateFilterInlineHtml. Sits
+   together with them on one row whenever there's room; wraps naturally like any other
+   flex item when there isn't. */
+.table-toolbar__dates {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+}
+
+.table-toolbar__dates label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+.table-toolbar__dates input[type="date"] {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--ink-900);
+  background: var(--white);
+}
+
+.table-toolbar__dates input[type="date"]:focus {
+  outline: none;
+  border-color: var(--blue-700);
+  box-shadow: 0 0 0 3px rgba(22, 64, 122, 0.15);
+}
+
+.table-toolbar__dates-clear {
+  font-size: 0.78rem;
+  padding: 0.4rem 0.75rem;
+  white-space: nowrap;
+}
+
+.table-toolbar__download {
+  font-size: 0.82rem;
+  padding: 0.5rem 0.9rem;
+  white-space: nowrap;
+}
+
+/* Pager slot for wirePaginatedTableSearch (see tableSectionHtml's `paginate` flag) -
+   empty (no height) whenever there's only one page. */
+.table-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: 0.85rem;
+}
+
+/* Record count relocated below the pager (see tableSectionHtml's `countBelowPager`) for
+   tables whose toolbar is already crowded with a date filter + status filter, e.g. SOA
+   Closing/XIRR. */
+.table-footer-count {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.table-footer-count .table-toolbar__count {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--gray-500);
+}
+
+.table-pager__btn {
+  font-size: 0.82rem;
+  padding: 0.45rem 0.9rem;
+}
+
+.table-pager__label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--gray-500);
+}
+
+.btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.detail-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.5rem 0 0.75rem;
+  flex-wrap: wrap;
+}
+
+.detail-panel__header .entity-card__title {
+  margin: 0;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+/* Compact tables (e.g. the Realised Gain trade-detail side panel) size to their own
+   content instead of stretching the bordered card across the whole panel width. */
+.table-scroll--fit {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+}
+
+.client-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 2400px;
+  font-size: 0.82rem;
+}
+
+.client-table--compact {
+  min-width: 0;
+  width: auto;
+}
+
+/* Summary/pivot tables (e.g. Management Fees) - no donut chart sits beside these, so unlike
+   --compact they should stretch to fill the card rather than leave blank space next to them. */
+.client-table--summary {
+  min-width: 0;
+  width: 100%;
+}
+
+.client-table th {
+  position: sticky;
+  top: 0;
+  text-align: left;
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--navy-900);
+  padding: 0.65rem 0.75rem;
+  white-space: nowrap;
+}
+
+.client-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--gray-200);
+  font-family: var(--font-mono);
+  color: var(--ink-900);
+  white-space: nowrap;
+}
+
+.client-table tbody tr:nth-child(even) {
+  background: var(--gray-100);
+}
+
+.client-table__row {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.client-table__row:hover {
+  background: var(--blue-100);
+}
+
+.client-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.client-table td.empty-state {
+  white-space: normal;
+  font-family: var(--font-body);
+}
+
+/* Realised Gain: table + donut chart side by side, sharing one bordered card */
+.table-scroll--split {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.table-scroll--split__table {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  overflow-x: auto;
+  border-right: 1px solid var(--gray-200);
+}
+
+.table-scroll--split__table .client-table {
+  min-width: 0;
+}
+
+.table-scroll--split__chart {
+  flex: 1 1 320px;
+  min-width: 320px;
+  display: flex;
+}
+
+.nav-donut {
+  padding: 1.25rem 1.5rem;
+  width: 100%;
+}
+
+.nav-donut--empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.nav-donut__title {
+  margin: 0 0 1rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+.nav-donut__body {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.nav-donut__chart-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.nav-donut__svg {
+  display: block;
+  overflow: visible;
+}
+
+.nav-donut__slice {
+  cursor: pointer;
+  transition: filter 0.12s ease;
+  outline: none;
+}
+
+.nav-donut__slice.is-hovered,
+.nav-donut__slice:focus-visible {
+  filter: brightness(1.08);
+}
+
+.nav-donut__slice:focus-visible {
+  stroke: var(--navy-900);
+  stroke-width: 1.5;
+}
+
+.nav-donut__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  padding: 0 0.5rem;
+}
+
+.nav-donut__center-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+.nav-donut__center-value {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-top: 0.15rem;
+}
+
+.nav-donut__legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+}
+
+.nav-donut__legend-row,
+.nav-donut__loss-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.8rem;
+}
+
+.nav-donut__legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.nav-donut__legend-swatch--loss {
+  border-radius: 50%;
+}
+
+.nav-donut__legend-label {
+  color: var(--ink-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-donut__legend-value {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+.nav-donut__legend-value--loss {
+  color: var(--red-600);
+}
+
+.nav-donut__losses {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+.nav-donut__losses-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+.nav-donut__tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 10px));
+  background: var(--navy-900);
+  color: var(--white);
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: var(--shadow-card);
+  z-index: 5;
+}
+
+.nav-donut__tooltip-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.nav-donut__tooltip-label {
+  color: var(--gray-200);
+  font-size: 0.68rem;
+}
+
+@media (max-width: 720px) {
+  .table-scroll--split__table {
+    border-right: none;
+    border-bottom: 1px solid var(--gray-200);
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+   Dashboard tab: NAV growth + XIRR charts, Client Master table
+   ========================================================================== */
+.dashboard-filter-bar {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  width: 100%;
+  background: var(--white);
+  border: 1.5px solid rgba(200, 16, 46, 0.28);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem 1.5rem 1.1rem;
+  margin-bottom: 1.25rem;
+}
+
+.dashboard-filter-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: linear-gradient(90deg, var(--red-700) 0%, var(--red-600) 35%, #E8536A 55%, var(--red-600) 75%, var(--red-700) 100%);
+}
+
+.dashboard-filter-bar__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.dashboard-filter-bar__field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+.dashboard-filter-bar__field input[type="date"] {
+  padding: 0.65rem 0.9rem;
+  min-width: 190px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--ink-900);
+  background: var(--white);
+}
+
+.dashboard-filter-bar__clear {
+  margin-left: auto;
+}
+
+.dashboard-filter-bar__field input[type="date"]:focus {
+  outline: none;
+  border-color: var(--blue-700);
+  box-shadow: 0 0 0 3px rgba(22, 64, 122, 0.15);
+}
+
+/* Separates the From/To inputs from the quick-range presets - fills the filter bar's
+   middle stretch with something useful instead of bare card padding. */
+.dashboard-filter-bar__divider {
+  align-self: stretch;
+  width: 1px;
+  background: var(--gray-200);
+}
+
+.dashboard-filter-bar__presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dashboard-filter-bar__preset {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+}
+
+.dashboard-filter-bar__preset:hover {
+  border-color: var(--blue-700);
+  color: var(--blue-700);
+}
+
+.dashboard-filter-bar__preset.is-active {
+  background: var(--blue-700);
+  border-color: var(--blue-700);
+  color: var(--white);
+}
+
+.dashboard-charts {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-charts--insights {
+  margin-bottom: 0;
+}
+
+.dashboard-section-title {
+  margin: 0 0 1rem;
+}
+
+.dashboard-chart-card {
+  position: relative;
+  flex: 1 1 320px;
+  min-width: 280px;
+  background: var(--white);
+  border: 1.5px solid rgba(200, 16, 46, 0.28);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem 1.25rem 1.1rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+/* Top accent stripe echoes the header's red accent line - gives each card a brand
+   touch without boxing the whole card in red, which would fight the chart's own blue.
+   Rounded on its own top corners (rather than clipping via the card's overflow) since
+   a hovered point's tooltip can legitimately render above the card's top edge and
+   shouldn't get cut off. */
+.dashboard-chart-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: linear-gradient(90deg, var(--red-700) 0%, var(--red-600) 35%, #E8536A 55%, var(--red-600) 75%, var(--red-700) 100%);
+}
+
+.dashboard-chart-card:hover {
+  box-shadow: 0 10px 24px rgba(10, 31, 68, 0.14);
+  transform: translateY(-2px);
+  border-color: rgba(200, 16, 46, 0.55);
+}
+
+.dashboard-chart-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--navy-900);
+}
+
+.dashboard-chart-card__title::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--red-600);
+}
+
+/* Investor Snapshot's long-tail breakdown cards (Top Investors, Scheme, City,
+   Distributor) - a small ranked bar list rather than a full SVG chart, since these are
+   one-off categorical rankings (see renderInvestorInsights) rather than a time series
+   like NAV/XIRR. The few-category, part-of-a-whole breakdowns (Class, Status) use
+   .insight-donut below instead. */
+.insight-bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.insight-bar-row {
+  display: grid;
+  grid-template-columns: 84px 1fr auto;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.insight-bar-row__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.insight-bar-row__track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--gray-100);
+  overflow: hidden;
+}
+
+.insight-bar-row__fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--blue-700), var(--navy-900));
+}
+
+.insight-bar-row__value {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+/* Investor Snapshot's few-category, part-of-a-whole breakdown cards (Commitment/
+   Investors by Class, Investors by Status) - see renderCategoryDonutCard. A lighter,
+   self-contained sibling of .nav-donut (no drill-down, no losses section, on-theme
+   navy->blue slice palette instead of the NAV Gain donut's per-instrument rainbow). */
+.insight-donut {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.insight-donut__svg {
+  display: block;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+.insight-donut__slice {
+  transition: filter 0.12s ease;
+}
+
+.insight-donut__slice:hover {
+  filter: brightness(1.12);
+}
+
+.insight-donut__legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 140px;
+  flex: 1 1 140px;
+}
+
+.insight-donut__legend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.8rem;
+}
+
+.insight-donut__legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.insight-donut__legend-label {
+  color: var(--ink-900);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.insight-donut__legend-value {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  color: var(--gray-500);
+  white-space: nowrap;
+}
+
+.trend-chart {
+  position: relative;
+}
+
+.trend-chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.trend-chart__gridline {
+  stroke: var(--gray-200);
+  stroke-width: 1;
+}
+
+.trend-chart__axis-label {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  fill: var(--gray-500);
+}
+
+.trend-chart__axis-label--y {
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.trend-chart__axis-label--x {
+  text-anchor: middle;
+}
+
+.trend-chart__line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trend-chart__end-dot {
+  stroke: var(--white);
+  stroke-width: 2;
+}
+
+.trend-chart__crosshair {
+  stroke: var(--gray-500);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  pointer-events: none;
+}
+
+.trend-chart__bar {
+  cursor: pointer;
+  transition: opacity 0.12s ease;
+}
+
+.trend-chart__bar:hover {
+  opacity: 0.85;
+}
+
+.trend-chart__tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 10px));
+  background: var(--navy-900);
+  color: var(--white);
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: var(--shadow-card);
+  z-index: 5;
+}
+
+.trend-chart__tooltip-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.trend-chart__tooltip-label {
+  color: var(--gray-200);
+  font-size: 0.68rem;
+}
+
+/* Category / scheme detail panel */
+.detail-panel {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-panel p {
+  color: var(--ink-900);
+  line-height: 1.6;
+  font-size: 0.94rem;
+}
+
+.sub-scheme-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  margin-top: 0.5rem;
+}
+
+.sub-scheme-table th {
+  text-align: left;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  border-bottom: 2px solid var(--navy-900);
+  padding: 0.5rem 0.6rem;
+}
+
+.sub-scheme-table td {
+  padding: 0.6rem 0.6rem;
+  border-bottom: 1px solid var(--gray-200);
+  font-family: var(--font-mono);
+  color: var(--ink-900);
+}
+
+.sub-scheme-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ==========================================================================
+   Modal (Client file)
+   ========================================================================== */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 31, 68, 0.45);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1.5rem;
+}
+
+.modal-backdrop.is-open {
+  display: flex;
+}
+
+.modal {
+  background: var(--white);
+  width: 100%;
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-modal);
+  border-top: 4px solid var(--red-600);
+}
+
+.modal.modal--wide {
+  max-width: 900px;
+}
+
+.modal.modal--narrow {
+  max-width: 420px;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--gray-200);
+  position: sticky;
+  top: 0;
+  background: var(--white);
+}
+
+.modal__header h2 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--navy-900);
+  margin: 0;
+}
+
+.modal__close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--gray-500);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.modal__close:hover {
+  color: var(--red-600);
+}
+
+.modal__body {
+  padding: 1.4rem;
+}
+
+/* ==========================================================================
+   Side panel (NAV -> Realised Gain symbol drill-down)
+   ========================================================================== */
+.side-panel-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 31, 68, 0.45);
+  justify-content: flex-end;
+  z-index: 100;
+}
+
+.side-panel-backdrop.is-open {
+  display: flex;
+}
+
+.side-panel {
+  display: flex;
+  align-items: stretch;
+  background: var(--white);
+  width: min(1400px, 96vw);
+  height: 100%;
+  box-shadow: var(--shadow-modal);
+  border-left: 4px solid var(--red-600);
+  transform: translateX(100%);
+  transition: transform 0.2s ease;
+}
+
+.side-panel-backdrop.is-open .side-panel {
+  transform: translateX(0);
+}
+
+.side-panel__content {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+/* A persistent full-height strip (like the panel's own red edge) rather than a small
+   floating card, so "Validated From" reads as its own region instead of getting lost
+   next to the table. */
+.side-panel__sidebar {
+  flex: 0 0 340px;
+  border-left: 4px solid #1E7A34;
+  background: var(--gray-100);
+  padding: 1.4rem 1.2rem;
+  overflow-y: auto;
+}
+
+/* Drag handle between the trade table and the sidebar - lets the sidebar be widened
+   so wider content (like the Row Errors table) doesn't need its own inner scrollbar. */
+.side-panel__resizer {
+  flex: 0 0 6px;
+  cursor: col-resize;
+  background: var(--gray-200, #E5E9EF);
+  position: relative;
+}
+
+.side-panel__resizer::before {
+  content: "";
+  position: absolute;
+  inset: 0 -4px;
+}
+
+.side-panel__resizer:hover,
+.side-panel__resizer.is-dragging {
+  background: var(--blue-700);
+}
+
+.side-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--gray-200);
+  position: sticky;
+  top: 0;
+  background: var(--white);
+}
+
+.side-panel__eyebrow {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.side-panel__header h2 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--navy-900);
+  margin: 0;
+}
+
+.side-panel__body {
+  padding: 1.4rem;
+}
+
+.side-panel__validation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: var(--blue-100);
+  border: 1px solid var(--blue-700);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+}
+
+.side-panel__validation-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--blue-700);
+  font-weight: 600;
+}
+
+.side-panel__validation-value {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--navy-900);
+}
+
+.side-panel__validation--errors {
+  margin-top: 1rem;
+  background: #FDEDEC;
+  border-color: var(--red-700);
+}
+
+.side-panel__validation--errors .side-panel__validation-label {
+  color: var(--red-700);
+}
+
+/* Management Fees summary: an investor row with at least one failed day-row gets a
+   persistent red tint, distinct from the transient blue hover state, so it stays visible
+   without needing to open the row's detail panel. */
+.client-table tbody tr.client-table__row--incorrect {
+  background: #FDEDEC;
+}
+
+.client-table tbody tr.client-table__row--incorrect:hover {
+  background: #FBDAD7;
+}
+
+.status-filter-select {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 150px;
+  padding-left: 0.85rem;
+  cursor: pointer;
+}
+
+.client-table tbody tr.is-selected-error-row {
+  background: #FDEDEC;
+}
+
+@media (max-width: 720px) {
+  .side-panel {
+    flex-direction: column;
+  }
+
+  .side-panel__sidebar {
+    flex: 0 0 auto;
+    border-left: none;
+    border-top: 4px solid #1E7A34;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-panel { transition: none; }
+}
+
+.client-file__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+}
+
+.client-file__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.client-file__label {
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  font-weight: 600;
+}
+
+.client-file__value {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--ink-900);
+}
+
+.client-file__value--figure {
+  font-weight: 600;
+  color: var(--navy-900);
+}
+
+.client-file__divider {
+  grid-column: 1 / -1;
+  border: none;
+  border-top: 1px solid var(--gray-200);
+  margin: 0.3rem 0;
+}
+
+.client-file__section-title {
+  grid-column: 1 / -1;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--navy-900);
+  margin: 0.4rem 0 0.1rem;
+}
+
+@media (max-width: 560px) {
+  .client-file__grid { grid-template-columns: 1fr; }
+  .app-header { padding: 0.85rem 1.1rem; }
+  .app-main { padding: 1.25rem; }
+  .trail { padding: 0.6rem 1.1rem; }
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.app-footer {
+  text-align: center;
+  padding: 1.2rem;
+  color: var(--gray-500);
+  font-size: 0.76rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .entity-card { transition: none; }
+  .nav-menu__card, .nav-menu__chevron, .nav-menu__flyout, .nav-menu__leaf, .nav-menu__leaf-dot { transition: none; }
+}

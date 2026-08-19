@@ -1,0 +1,10 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+motor==3.5.1
+pymongo==4.8.0
+python-dotenv==1.0.1
+pydantic==2.9.2
+python-multipart==0.0.32
+pandas==3.0.5
+openpyxl==3.1.5
+xlrd==2.0.2

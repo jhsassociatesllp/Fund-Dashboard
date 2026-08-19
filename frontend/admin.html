@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fund Administration Portal - Admin</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-header__brand">
+    <img src="assets/logo.svg" alt="Company logo" class="app-header__logo" />
+    <div class="app-header__wordmark">
+      <span class="app-header__company">FundPulse<span class="app-header__company-badge">360</span></span>
+      <span class="app-header__tagline">Admin Console</span>
+    </div>
+  </div>
+  <nav class="app-header__tabs">
+    <a class="tab-button" href="index.html" target="_blank" rel="noopener noreferrer">Investor Portal</a>
+    <span class="tab-button is-active">Admin</span>
+  </nav>
+</header>
+
+<div class="trail" id="trail" aria-label="Navigation trail"></div>
+
+<main class="app-main" id="app-main">
+  <!-- View content injected by admin.js -->
+</main>
+
+<div class="modal-backdrop" id="add-fund-backdrop">
+  <div class="modal modal--narrow" id="add-fund-modal" role="dialog" aria-modal="true" aria-labelledby="add-fund-title">
+    <div class="modal__header">
+      <h2 id="add-fund-title">Add Fund</h2>
+      <button class="modal__close" id="add-fund-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal__body">
+      <form id="create-fund-form" class="add-fund-form">
+        <label class="add-fund-form__label" for="create-fund-name">New fund / company name</label>
+        <input type="text" id="create-fund-name" placeholder="e.g. Meridian Capital" required />
+        <div class="add-fund-form__actions">
+          <button type="button" class="btn" id="cancel-add-fund">Cancel</button>
+          <button type="submit" class="btn btn--primary">Add Fund</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="validation-doc-backdrop">
+  <div class="modal modal--wide" id="validation-doc-modal" role="dialog" aria-modal="true" aria-labelledby="validation-doc-title">
+    <div class="modal__header">
+      <h2 id="validation-doc-title">Validated Documents</h2>
+      <button class="modal__close" id="validation-doc-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal__body" id="validation-doc-modal-body"></div>
+  </div>
+</div>
+
+<footer class="app-footer">
+  <span>Internal use only. Changes made here reflect immediately on the Investor Portal.</span>
+</footer>
+
+<script src="js/admin.js"></script>
+</body>
+</html>
