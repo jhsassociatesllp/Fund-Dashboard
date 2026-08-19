@@ -211,9 +211,17 @@ const NUMBER_FORMAT_2DP = new Intl.NumberFormat("en-IN", { maximumFractionDigits
 // ones should get decimal-rounding + thousands separators applied. Returns null for
 // anything that isn't a plain number (dates, ISINs, "0:0" ratios, etc.) so the caller
 // falls back to showing the original string untouched.
+//
+// A leading "'" is stripped before parsing - Excel's own "store as text" marker for a
+// cell (typically added so a negative number, leading zero, or the like isn't
+// auto-reformatted), which some uploads carry through into the cell value itself
+// (e.g. "'-3496762.71") rather than being purely a display-only marker in Excel. Without
+// stripping it, Number() sees a non-numeric string and this whole function bails out,
+// leaving the raw "'-3496762.71" showing verbatim instead of a formatted number - this
+// fixes it everywhere at once since every numeric cell in the app renders through here.
 function formatNumericDisplay(value) {
   if (value === null || value === undefined) return null;
-  const raw = String(value).trim();
+  const raw = String(value).trim().replace(/^'/, "");
   if (raw === "" || Number.isNaN(Number(raw))) return null;
   return NUMBER_FORMAT_2DP.format(Number(raw));
 }
