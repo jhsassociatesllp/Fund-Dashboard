@@ -137,6 +137,22 @@ def _stringify_data(data: dict) -> dict:
     return {key: _as_text(value, default="") for key, value in (data or {}).items()}
 
 
+def _sanitize_mappings(mappings: dict) -> dict:
+    """Defensive coercion for ValidationDocMap.mappings (Dict[str, str]), same idea as
+    _stringify_data. Real saves (wireValidationDocSave in admin.js) only ever write plain
+    strings, but some directly-inserted records have a value that's itself a single-key
+    dict (e.g. {"25": "PPM, SOA"} instead of just "PPM, SOA") - unwrap that to the inner
+    value rather than falling back to str(dict)'s ugly repr; anything else just gets
+    _as_text's usual coercion.
+    """
+    sanitized = {}
+    for key, value in (mappings or {}).items():
+        if isinstance(value, dict):
+            value = next(iter(value.values()), "") if value else ""
+        sanitized[str(key)] = _as_text(value, default="")
+    return sanitized
+
+
 def _coerce_errors(errors: list) -> list[dict]:
     """Same defensive coercion, for NavValidationError.original/auditor - the
     auditor's recalculated value is a genuine number at parse time (see
@@ -531,7 +547,7 @@ async def get_validation_docs(fund_id: str, category: str):
         raise HTTPException(status_code=404, detail="Unknown category")
 
     doc = await validation_docs_collection.find_one({"_id": f"{fund_id}:{category}"})
-    return ValidationDocMap(fund_id=fund_id, category=category, mappings=(doc or {}).get("mappings", {}))
+    return ValidationDocMap(fund_id=fund_id, category=category, mappings=_sanitize_mappings((doc or {}).get("mappings", {})))
 
 
 @app.put("/api/admin/funds/{fund_id}/nav/{category}/validation-docs", response_model=ValidationDocMap)
@@ -557,7 +573,7 @@ async def update_validation_docs(fund_id: str, category: str, update: Validation
         )
 
     doc = await validation_docs_collection.find_one({"_id": f"{fund_id}:{category}"})
-    return ValidationDocMap(fund_id=fund_id, category=category, mappings=(doc or {}).get("mappings", {}))
+    return ValidationDocMap(fund_id=fund_id, category=category, mappings=_sanitize_mappings((doc or {}).get("mappings", {})))
 
 
 @app.get("/api/funds/{fund_id}/clients", response_model=list[ClientRecord])
