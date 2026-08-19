@@ -3068,7 +3068,12 @@ async function openInvestorMovementDetail(fund, investorCode, allMovements, move
   if (matches.length === 0) return;
 
   const total = matches.reduce((sum, m) => sum + m.amount, 0);
-  const columns = Object.keys(matches[0].data).map((key) => ({ key, label: key }));
+  // "Clg Units" is the sheet's own abbreviated header - spelled out for display (key
+  // stays as-is, only the label changes, so lookups elsewhere are unaffected).
+  const columns = Object.keys(matches[0].data).map((key) => ({
+    key,
+    label: /^clg\s*units$/i.test(key) ? "Closing Units" : key,
+  }));
   // Inject validation metadata into each row so the UI can render a Status column and
   // show field-level errors in the side panel (same pattern used by NAV/Closing flows).
   // Sorted here (not inherited from allMovements' own order) because the column actually
