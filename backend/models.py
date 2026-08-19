@@ -5,7 +5,7 @@ deal with BSON types.
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 
 
 class FundSummary(BaseModel):
@@ -171,15 +171,21 @@ class ValidationDocMap(BaseModel):
     Upload templates for these categories aren't standardized, so this isn't a fixed
     list: the admin adds an entry the first time a new type value shows up in an
     upload, and can edit any entry afterwards.
+
+    Each value is normally a plain string (the document name). Realised Gain,
+    Unrealised Gain, and Corporate Action instead get a {trade_details,
+    validating_document, test_procedure} object per type - see
+    DETAIL_FIELD_CATEGORIES/_sanitize_mappings in main.py, which is what actually
+    enforces that shape (Any here just means Pydantic doesn't fight it either way).
     """
 
     fund_id: str
     category: str
-    mappings: Dict[str, str] = Field(default_factory=dict)
+    mappings: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ValidationDocUpdate(BaseModel):
-    mappings: Dict[str, str]
+    mappings: Dict[str, Any]
 
 
 class SchemeSummary(BaseModel):

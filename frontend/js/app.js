@@ -2101,6 +2101,18 @@ function wireNavGroupMenu(fund, group) {
 // and click into one for its month-by-month figures and auditor validation.
 const GAIN_SUMMARY_CATEGORIES = new Set(["realised-gain", "unrealised-gain", "corporate-action", "other-expense"]);
 
+// Realised Gain / Unrealised Gain / Corporate Action get three admin-entered fields per
+// Instrument Type (Trade Details / Validating Document / Test Procedure) instead of the
+// single Validating Document string Other Expense uses - see openInstrumentTypeDetail/
+// openTradesDetailPanel below. Kept in sync with DETAIL_FIELD_CATEGORIES in
+// backend/main.py and admin.js, which is where these are actually edited.
+const DETAIL_FIELD_GAIN_CATEGORIES = new Set(["realised-gain", "unrealised-gain", "corporate-action"]);
+const VALIDATION_DETAIL_FIELDS = [
+  { key: "trade_details", label: "Trade Details" },
+  { key: "validating_document", label: "Validating Document" },
+  { key: "test_procedure", label: "Test Procedure" },
+];
+
 // Instrument types excluded entirely from a category's Gain view - not just hidden with
 // CSS, filtered out of the row set before the summary/donut/trade-detail are built at all,
 // so their amounts don't sneak into the category's totals either. Matched case-
@@ -2525,7 +2537,7 @@ function renderGainSummary(view, fund, category, label, columns, rows, instrumen
   view.querySelectorAll("tr[data-instrument-type]").forEach((tr) => {
     tr.addEventListener("click", () => {
       const entry = summary.find((s) => s.type === tr.dataset.instrumentType);
-      if (entry) openInstrumentTypeDetail(label, columns, entry, docMappings);
+      if (entry) openInstrumentTypeDetail(category, label, columns, entry, docMappings);
     });
   });
 
@@ -2599,7 +2611,10 @@ function rowStatusDetailHtml(trade, columns) {
 // when any of them carry validation - clicking a dot drills into the field-level Fund vs
 // Auditor breakdown via rowStatusDetailHtml. `sidebarExtraHtml` is the caller's own
 // identifying-fields block (e.g. Instrument Type, or Investor/Class/Series Code) rendered
-// above the shared "Validated From" + row-errors area.
+// above the shared validation-fields + row-errors area. `validationDoc` is either a plain
+// string ("Validated From" - Other Expense, Management Fees) or a {trade_details,
+// validating_document, test_procedure} object (Realised/Unrealised Gain, Corporate Action
+// - see DETAIL_FIELD_GAIN_CATEGORIES), rendered as one row or three accordingly.
 function openTradesDetailPanel(eyebrow, title, columns, trades, validationDoc, sidebarExtraHtml) {
   const hasValidation = trades.some((t) => t.__status === "correct" || t.__status === "incorrect");
 
@@ -2609,12 +2624,24 @@ function openTradesDetailPanel(eyebrow, title, columns, trades, validationDoc, s
 
   const bodyHtml = staticTableHtml(detailColumns, trades, "No rows found.", true);
 
-  const sidebarHtml = `
-    ${sidebarExtraHtml || ""}
+  const validationFieldsHtml =
+    validationDoc && typeof validationDoc === "object"
+      ? VALIDATION_DETAIL_FIELDS.map(
+          (f) => `
+    <div class="side-panel__validation">
+      <span class="side-panel__validation-label">${escapeHtml(f.label)}</span>
+      <span class="side-panel__validation-value">${escapeHtml(validationDoc[f.key] || "Not specified")}</span>
+    </div>`
+        ).join("")
+      : `
     <div class="side-panel__validation">
       <span class="side-panel__validation-label">Validated From</span>
       <span class="side-panel__validation-value">${escapeHtml(validationDoc || "Not specified")}</span>
-    </div>
+    </div>`;
+
+  const sidebarHtml = `
+    ${sidebarExtraHtml || ""}
+    ${validationFieldsHtml}
     <div id="side-panel-row-errors"></div>
   `;
 
@@ -2634,11 +2661,28 @@ function openTradesDetailPanel(eyebrow, title, columns, trades, validationDoc, s
   });
 }
 
-function openInstrumentTypeDetail(label, columns, entry, docMappings) {
+function openInstrumentTypeDetail(category, label, columns, entry, docMappings) {
+  const mapped = docMappings && docMappings[entry.type];
+
+  // Realised Gain/Unrealised Gain/Corporate Action carry three admin-entered fields per
+  // type (see DETAIL_FIELD_GAIN_CATEGORIES) rather than the single Validating Document
+  // string every other Gain-shaped category (currently just Other Expense) uses.
+  if (DETAIL_FIELD_GAIN_CATEGORIES.has(category)) {
+    const detail = mapped && typeof mapped === "object" ? mapped : {};
+    const validationDetail = {
+      trade_details: detail.trade_details || "",
+      // Same admin-wins-over-heuristic fallback as the plain-string categories below.
+      validating_document: detail.validating_document || navValidationDocFor(entry.type) || "",
+      test_procedure: detail.test_procedure || "",
+    };
+    openTradesDetailPanel(label, entry.type, columns, entry.trades, validationDetail);
+    return;
+  }
+
   // The admin-maintained list (set on the Admin Portal's upload page) wins when it has
   // an entry for this type; otherwise fall back to the built-in Equity/Bond/Mutual Fund
   // heuristic, which only ever matches income-side instrument types anyway.
-  const validationDoc = (docMappings && docMappings[entry.type]) || navValidationDocFor(entry.type);
+  const validationDoc = (typeof mapped === "string" && mapped) || navValidationDocFor(entry.type);
   openTradesDetailPanel(label, entry.type, columns, entry.trades, validationDoc);
 }
 

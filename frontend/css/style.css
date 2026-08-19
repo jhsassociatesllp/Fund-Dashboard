@@ -1026,6 +1026,12 @@ a.tab-button {
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 0.8fr) minmax(0, 0.7fr) minmax(0, 1.3fr);
 }
 
+/* Realised/Unrealised Gain and Corporate Action's editor has three admin-entered fields
+   per Instrument Type instead of the single Validating Document column. */
+.validation-doc-row--gain-detail {
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
 .validation-doc-row__type {
   display: flex;
   align-items: center;

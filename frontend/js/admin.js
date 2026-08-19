@@ -177,6 +177,19 @@ function managementFeesDocKey(investorCode, classCode, feePercent) {
   return `${investorCode}||${classCode}||${feePercent}`;
 }
 
+// Realised Gain / Unrealised Gain / Corporate Action get three admin-entered fields per
+// Instrument Type instead of the single Validating Document column every other category
+// (Other Expense, Management Fees, Corpus In/Out, SOA) uses - see
+// renderGainDetailFieldsEditor below. Kept in sync with DETAIL_FIELD_CATEGORIES in
+// backend/main.py, which is what actually enforces the {trade_details,
+// validating_document, test_procedure} shape server-side.
+const DETAIL_FIELD_CATEGORIES = new Set(["realised-gain", "unrealised-gain", "corporate-action"]);
+const VALIDATION_DETAIL_FIELDS = [
+  { key: "trade_details", label: "Trade Details", placeholder: "e.g. Contract Note No." },
+  { key: "validating_document", label: "Validating Document", placeholder: "e.g. Contract Note / Trade Listing" },
+  { key: "test_procedure", label: "Test Procedure", placeholder: "e.g. Match qty/rate to broker note" },
+];
+
 // Categories whose validated-document checklist isn't derived from the uploaded data at all
 // (unlike Instrument Type or Management Fees' Investor/Class/Fees%) - editable via
 // renderFixedValidationDocEditor, which also lets an admin add extra types beyond
@@ -560,6 +573,11 @@ async function loadValidationDocEditor(fund, category, label) {
     }
     const types = Array.from(new Set(rows.map((r) => String(r[groupKey] ?? "").trim()).filter(Boolean))).sort();
 
+    if (DETAIL_FIELD_CATEGORIES.has(category)) {
+      renderGainDetailFieldsEditor(container, fund, category, label, types, mappings);
+      return;
+    }
+
     container.innerHTML = `
       <p class="upload-card__hint validation-doc-editor__hint">Which document validates each type below. Edit anytime; a type not yet mapped shows as "New".</p>
       <div class="validation-doc-list">
@@ -592,14 +610,69 @@ async function loadValidationDocEditor(fund, category, label) {
   }
 }
 
-// Shared by the generic Type-column editor above and renderManagementFeesValidationDocEditor
-// below: collects every .validation-doc-input's data-type -> value pair and saves it.
+// Realised Gain / Unrealised Gain / Corporate Action: three admin-entered fields per
+// Instrument Type (Trade Details / Validating Document / Test Procedure) instead of the
+// single Validating Document column the other categories use. A pre-existing entry saved
+// before this feature existed is a plain string (the old single field) - _sanitize_mappings
+// on the backend already migrates that into {validating_document: <old value>, ...} before
+// it ever reaches here, but fieldValue falls back the same way just in case.
+function renderGainDetailFieldsEditor(container, fund, category, label, types, mappings) {
+  const fieldValue = (type, fieldKey) => {
+    const entry = mappings[type];
+    if (entry && typeof entry === "object") return entry[fieldKey] || "";
+    return fieldKey === "validating_document" ? entry || "" : "";
+  };
+  const isNew = (type) => VALIDATION_DETAIL_FIELDS.every((f) => !fieldValue(type, f.key));
+
+  container.innerHTML = `
+    <p class="upload-card__hint validation-doc-editor__hint">Trade Details, Validating Document, and Test Procedure for each type below. Edit anytime; a type with nothing filled in shows as "New".</p>
+    <div class="validation-doc-list">
+      <div class="validation-doc-row validation-doc-row--gain-detail validation-doc-row--head">
+        <span>Type</span>
+        ${VALIDATION_DETAIL_FIELDS.map((f) => `<span>${escapeHtml(f.label)}</span>`).join("")}
+      </div>
+      ${types
+        .map(
+          (t) => `
+        <div class="validation-doc-row validation-doc-row--gain-detail">
+          <span class="validation-doc-row__type" title="${escapeHtml(t)}">
+            <span class="validation-doc-row__type-name">${escapeHtml(t)}</span>
+            ${isNew(t) ? '<span class="badge-new">New</span>' : ""}
+          </span>
+          ${VALIDATION_DETAIL_FIELDS.map(
+            (f) =>
+              `<input type="text" class="validation-doc-input" data-type="${escapeHtml(t)}" data-field="${f.key}" value="${escapeHtml(fieldValue(t, f.key))}" placeholder="${escapeHtml(f.placeholder)}" />`
+          ).join("")}
+        </div>`
+        )
+        .join("")}
+    </div>
+    <div class="validation-doc-editor__actions">
+      <button type="button" class="btn btn--primary" id="validation-doc-save">Save Validated Documents</button>
+      <span class="validation-doc-editor__status" id="validation-doc-status"></span>
+    </div>
+  `;
+
+  wireValidationDocSave(container, fund, category, label);
+}
+
+// Shared by the generic Type-column editor above, renderGainDetailFieldsEditor, and
+// renderManagementFeesValidationDocEditor below: collects every .validation-doc-input and
+// saves it. An input with data-field set (renderGainDetailFieldsEditor's three-fields-per-
+// type layout) is grouped into a {field: value} object per data-type; one without it (every
+// other editor here) saves as a single plain string, same as always.
 function wireValidationDocSave(container, fund, category, label) {
   document.getElementById("validation-doc-save").addEventListener("click", async () => {
     const statusEl = document.getElementById("validation-doc-status");
     const updates = {};
     container.querySelectorAll(".validation-doc-input").forEach((input) => {
-      updates[input.dataset.type] = input.value.trim();
+      const type = input.dataset.type;
+      if (input.dataset.field) {
+        if (!updates[type] || typeof updates[type] !== "object") updates[type] = {};
+        updates[type][input.dataset.field] = input.value.trim();
+      } else {
+        updates[type] = input.value.trim();
+      }
     });
 
     statusEl.textContent = "Saving...";

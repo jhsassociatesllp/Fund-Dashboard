@@ -137,15 +137,38 @@ def _stringify_data(data: dict) -> dict:
     return {key: _as_text(value, default="") for key, value in (data or {}).items()}
 
 
-def _sanitize_mappings(mappings: dict) -> dict:
-    """Defensive coercion for ValidationDocMap.mappings (Dict[str, str]), same idea as
-    _stringify_data. Real saves (wireValidationDocSave in admin.js) only ever write plain
-    strings, but some directly-inserted records have a value that's itself a single-key
-    dict (e.g. {"25": "PPM, SOA"} instead of just "PPM, SOA") - unwrap that to the inner
-    value rather than falling back to str(dict)'s ugly repr; anything else just gets
-    _as_text's usual coercion.
+# Realised Gain / Unrealised Gain / Corporate Action's validation-docs mappings carry
+# three admin-entered fields per Instrument Type instead of the one plain string every
+# other category (Other Expense, Management Fees, Corpus In/Out, SOA) uses - see
+# renderGainDetailFieldsEditor in frontend/js/admin.js, which is where these are edited.
+DETAIL_FIELD_CATEGORIES = {"realised-gain", "unrealised-gain", "corporate-action"}
+VALIDATION_DETAIL_FIELDS = ("trade_details", "validating_document", "test_procedure")
+
+
+def _sanitize_mappings(mappings: dict, category: str | None = None) -> dict:
+    """Defensive coercion for ValidationDocMap.mappings, same idea as _stringify_data.
+
+    For DETAIL_FIELD_CATEGORIES, each value should be a {trade_details,
+    validating_document, test_procedure} object - a plain-string value here is a
+    pre-existing entry saved before this feature existed (back when these categories
+    also used the single "Validating Document" field), migrated in place under
+    validating_document rather than losing it.
+
+    For every other category, real saves (wireValidationDocSave in admin.js) only ever
+    write plain strings, but some directly-inserted records have a value that's itself a
+    single-key dict (e.g. {"25": "PPM, SOA"} instead of just "PPM, SOA") - unwrap that to
+    the inner value rather than falling back to str(dict)'s ugly repr; anything else just
+    gets _as_text's usual coercion.
     """
     sanitized = {}
+    if category in DETAIL_FIELD_CATEGORIES:
+        for key, value in (mappings or {}).items():
+            if isinstance(value, dict):
+                sanitized[str(key)] = {field: _as_text(value.get(field), default="") for field in VALIDATION_DETAIL_FIELDS}
+            else:
+                sanitized[str(key)] = {"trade_details": "", "validating_document": _as_text(value, default=""), "test_procedure": ""}
+        return sanitized
+
     for key, value in (mappings or {}).items():
         if isinstance(value, dict):
             value = next(iter(value.values()), "") if value else ""
@@ -547,7 +570,7 @@ async def get_validation_docs(fund_id: str, category: str):
         raise HTTPException(status_code=404, detail="Unknown category")
 
     doc = await validation_docs_collection.find_one({"_id": f"{fund_id}:{category}"})
-    return ValidationDocMap(fund_id=fund_id, category=category, mappings=_sanitize_mappings((doc or {}).get("mappings", {})))
+    return ValidationDocMap(fund_id=fund_id, category=category, mappings=_sanitize_mappings((doc or {}).get("mappings", {}), category))
 
 
 @app.put("/api/admin/funds/{fund_id}/nav/{category}/validation-docs", response_model=ValidationDocMap)
@@ -573,7 +596,7 @@ async def update_validation_docs(fund_id: str, category: str, update: Validation
         )
 
     doc = await validation_docs_collection.find_one({"_id": f"{fund_id}:{category}"})
-    return ValidationDocMap(fund_id=fund_id, category=category, mappings=_sanitize_mappings((doc or {}).get("mappings", {})))
+    return ValidationDocMap(fund_id=fund_id, category=category, mappings=_sanitize_mappings((doc or {}).get("mappings", {}), category))
 
 
 @app.get("/api/funds/{fund_id}/clients", response_model=list[ClientRecord])
