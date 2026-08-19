@@ -63,7 +63,7 @@ const CLIENT_COLUMNS = [
   { key: "pin_code", label: "Pin Code", raw: true },
   { key: "country", label: "Country" },
   { key: "bank_name", label: "Bank Name" },
-  { key: "bank_account_no", label: "Bank Account No", raw: true },
+  { key: "bank_account_no", label: "Bank Account No", raw: true, render: (value) => escapeHtml(maskBankAccount(value)) },
   { key: "bank_account_type", label: "Bank Account Type" },
   { key: "bank_ifsc_code", label: "Bank IFSC Code" },
   { key: "commitment_amount", label: "Commitment Amount", currency: true },
@@ -469,6 +469,17 @@ async function navigateToFundRoot() {
   } catch (err) {
     setError(err.message);
   }
+}
+
+// Bank account numbers are masked everywhere they're displayed on screen - table cell
+// and the client detail panel - showing only the first 4 digits, the rest as X's. CSV
+// export is untouched: downloadCsv/csvCellValue read the raw field directly (same as
+// every other column - see downloadCsv's comment), since that's an explicit admin
+// export rather than on-screen display.
+function maskBankAccount(value) {
+  const str = String(value ?? "").trim();
+  if (!str || str === "-") return "-";
+  return str.length <= 4 ? str : str.slice(0, 4) + "X".repeat(str.length - 4);
 }
 
 function formatCellValue(record, column) {
@@ -2759,7 +2770,7 @@ async function openClientFile(clientId) {
         <hr class="client-file__divider" />
         <span class="client-file__section-title">Bank Details</span>
         ${field("Bank Name", c.bank_name)}
-        ${field("Bank Account No", c.bank_account_no)}
+        ${field("Bank Account No", maskBankAccount(c.bank_account_no))}
         ${field("Bank Account Type", c.bank_account_type)}
         ${field("Bank IFSC Code", c.bank_ifsc_code)}
         ${field("DP ID", c.dp_id)}
