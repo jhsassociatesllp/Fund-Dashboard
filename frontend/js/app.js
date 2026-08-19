@@ -1296,13 +1296,13 @@ const DASHBOARD_DONUT_OTHER_COLOR = "#94A3B8";
 // comparing a long tail of individual values (that's what the bar-list cards are for).
 // `asPie` collapses the inner radius to 0 (donutSegmentPath still works - the inner arc
 // just degenerates to the center point), for a plain pie instead of a ring.
-function renderCategoryDonutCard(title, entries, commitmentKey, limit = 6, asPie = false) {
+function renderCategoryDonutCard(title, entries, commitmentKey, limit = 6, asPie = false, showOther = true) {
   if (entries.length === 0) return "";
   const top = entries.slice(0, limit);
   const rest = entries.slice(limit);
   const restTotal = rest.reduce((sum, [, v]) => sum + v, 0);
   const slices = top.map(([label, value], i) => ({ label, value, color: DASHBOARD_DONUT_PALETTE[i % DASHBOARD_DONUT_PALETTE.length] }));
-  if (rest.length > 0 && restTotal > 0) {
+  if (showOther && rest.length > 0 && restTotal > 0) {
     slices.push({ label: `Other (${rest.length})`, value: restTotal, color: DASHBOARD_DONUT_OTHER_COLOR });
   }
 
@@ -1432,7 +1432,14 @@ function renderInvestorInsights(rows) {
   // read in. City/Distributor column charts were dropped from the Dashboard per user
   // request.
   const cardsHtml = [
-    renderCategoryDonutCard(commitmentKey ? "Commitment by Class" : "Investors by Class", groupByCategory(rows, classKey, commitmentKey), commitmentKey),
+    renderCategoryDonutCard(
+      commitmentKey ? "Top 5 Commitment by Class" : "Top 5 Investors by Class",
+      groupByCategory(rows, classKey, commitmentKey),
+      commitmentKey,
+      5,
+      false,
+      false
+    ),
     buildTopInvestorsCard(rows, nameKey, commitmentKey),
     renderCategoryDonutCard("Investors by Status", groupByCategory(rows, statusKey, null), null, 6, true),
     buildCategoryBarListCard(groupByCategory(rows, schemeKey, commitmentKey), commitmentKey ? "Commitment by Scheme" : "Investors by Scheme", commitmentKey),
