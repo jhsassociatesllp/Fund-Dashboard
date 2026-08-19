@@ -610,9 +610,15 @@ def parse_corpus_in(filename: str, content: bytes) -> tuple[list[dict], list[str
 
         amount = _number(norm, "capitalreceived", "amount", "contributionamount", "amountreceived", "capitalamount")
 
+        # "dateofreceived" ("Date of Received") is a real Corpus In header some sheets use
+        # (originally missing from this alias list) - without a match here movement_date
+        # falls back to _text's "-" default, which then silently defeats the investor
+        # portal's date-range filter for that row (an unparseable date is kept regardless
+        # of the selected range, by design - see filterRowsByDateRange in app.js) rather
+        # than raising anything, so the gap went unnoticed until every row hit it.
         docs.append({
             "movement_type": "In",
-            "movement_date": _text(norm, "dateofbank", "date", "transactiondate", "valuedate", "dateofcontribution"),
+            "movement_date": _text(norm, "dateofbank", "dateofreceived", "date", "transactiondate", "valuedate", "dateofcontribution"),
             "investor_code": investor_code,
             "investor_name": investor_name,
             "client_class": _text(norm, "classcode", "class", "clientclass"),
