@@ -19,9 +19,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 import logging
-import file_import
+from . import file_import
 logger = logging.getLogger(__name__)
-from database import (
+from .database import (
     funds_collection,
     clients_collection,
     corpus_movements_collection,
@@ -33,8 +33,8 @@ from database import (
     validation_docs_collection,
     ping_database,
 )
-from seed_data import seed_if_empty
-from models import (
+from .seed_data import seed_if_empty
+from .models import (
     FundSummary,
     FundCreate,
     UploadResult,

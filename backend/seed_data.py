@@ -9,7 +9,7 @@ its Client Master / Corpus Movement file). Only the Fund Scheme reference
 data (AIF categories) ships with sample content.
 """
 
-from database import schemes_collection, categories_collection
+from .database import schemes_collection, categories_collection
 
 
 async def seed_if_empty():
