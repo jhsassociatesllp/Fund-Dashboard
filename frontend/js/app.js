@@ -1890,7 +1890,9 @@ async function loadSoaCategoryView(fund) {
     const showChecklistAboveTable = !hasValidation;
 
     // The date filter sits inline in tableSectionHtml's own toolbar row, next to the
-    // search field, instead of a separate card above.
+    // search field, instead of a separate card above. XIRR skips it entirely - every row
+    // is the same NAV Date per cycle, so a date-range control has nothing meaningful to
+    // narrow down (Closing keeps it, since that one's rows do span a real date range).
     view.innerHTML =
       `<h2 class="entity-card__title" style="margin-bottom: 0.75rem;">${escapeHtml(label)}</h2>` +
       (showChecklistAboveTable ? checklistHtml : "") +
@@ -1900,7 +1902,7 @@ async function loadSoaCategoryView(fund) {
         `Search ${label.toLowerCase()}...`,
         true,
         false,
-        dateFilterInlineHtml(filterKey, allRows),
+        category === "xirr" ? "" : dateFilterInlineHtml(filterKey, allRows),
         hasValidation ? statusFilterSelectHtml(prefix) : ""
       );
     wireDateFilterBar(filterKey, () => loadSoaCategoryView(fund));
