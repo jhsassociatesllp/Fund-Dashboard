@@ -1908,7 +1908,12 @@ a.tab-button {
 
 .table-scroll--split__table {
   flex: 0 0 auto;
-  align-self: flex-start;
+  /* No align-self override here on purpose - stretches to match .table-scroll--split__chart's
+     height (the parent's own align-items: stretch), so the border-right actually reaches
+     the bottom of the taller column (the chart's "Not shown above" loss list often makes
+     it taller than the table) instead of stopping wherever the table's own rows end. The
+     table itself still sits at the top of that taller box - only the empty space below it
+     grows, not the table's rows. */
   overflow-x: auto;
   border-right: 2px solid var(--blue-700);
 }
