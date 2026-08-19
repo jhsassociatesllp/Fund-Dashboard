@@ -436,6 +436,81 @@ def parse_management_fees(filename: str, content: bytes) -> tuple[list[dict], li
     )
 
 
+def parse_performance_fee(filename: str, content: bytes) -> tuple[list[dict], list[str]]:
+    """Parses the Performance Fee upload. Unlike the other NAV categories, this sheet has
+    no separate auditor-recheck block (no Diff-pair columns) - each row already carries
+    its own pass/fail verdict in a "Formula Check" column (e.g. "OK"), so status/errors
+    are derived straight from that column's value per row instead of comparing a fund
+    figure against an auditor figure.
+
+    The header row also isn't row 1 - that's a merged title ("AIF Performance Fee"),
+    with a few blank rows before the real header - so it's found by scanning for the
+    first row with more than one non-blank cell, the same "row 1 might just be a title,
+    not real headers" situation _parse_sheet_with_auditor_validation's row-1 check
+    handles, just with the title one row shorter and no auditor block at all.
+    """
+    lower = (filename or "").lower()
+    if not lower.endswith((".xlsx", ".xlsm")):
+        df = read_table(filename, content)
+        return parse_generic(df)
+
+    try:
+        from openpyxl import load_workbook
+
+        wb = load_workbook(BytesIO(content), data_only=True)
+        ws = wb.active
+    except Exception as exc:
+        raise ValueError(f"Could not read '{filename}' as an Excel file: {exc}")
+
+    max_col = ws.max_column
+    max_row = ws.max_row
+
+    header_row = None
+    for r in range(1, max_row + 1):
+        non_blank = sum(1 for c in range(1, max_col + 1) if str(ws.cell(row=r, column=c).value or "").strip())
+        if non_blank > 1:
+            header_row = r
+            break
+    if header_row is None or header_row >= max_row:
+        raise ValueError("No data rows found in the uploaded file for Performance Fees.")
+
+    headers = [str(ws.cell(row=header_row, column=c).value or "").strip() for c in range(1, max_col + 1)]
+    formula_check_idx = next((i for i, h in enumerate(headers) if _normalize_header(h) == "formulacheck"), None)
+
+    docs: list[dict] = []
+    for r in range(header_row + 1, max_row + 1):
+        raw_values = [ws.cell(row=r, column=c).value for c in range(1, max_col + 1)]
+        if not any(str(v).strip() for v in raw_values if v is not None):
+            continue
+
+        row: dict[str, str] = {}
+        for i, header in enumerate(headers):
+            if not header:
+                continue
+            row[header] = "" if raw_values[i] is None else str(raw_values[i]).strip()
+        if not row:
+            continue
+
+        status = None
+        errors: list[dict] = []
+        if formula_check_idx is not None:
+            check_value = row.get(headers[formula_check_idx], "")
+            if check_value:
+                is_ok = check_value.strip().lower() in ("ok", "match", "matched", "correct", "true", "yes")
+                status = "correct" if is_ok else "incorrect"
+                if not is_ok:
+                    errors.append({
+                        "field": headers[formula_check_idx],
+                        "original": check_value,
+                        "auditor": "OK",
+                        "diff": None,
+                    })
+
+        docs.append({"data": row, "status": status, "errors": errors})
+
+    return docs, []
+
+
 # SOA Closing sheets carry the same two-row-header auditor block as the NAV gain
 # categories above - a merged "As per Validator" label over a repeating (field, Diff)
 # block re-checking Class / NAV/Unit / Units against the fund's own figures. Every

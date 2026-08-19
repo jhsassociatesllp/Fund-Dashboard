@@ -92,6 +92,7 @@ const FIXED_VALIDATION_TYPES = {
   transaction: [],
   closing: [],
   xirr: [],
+  "performance-fees": [],
 };
 
 // Columns shown in the Corpus Movement register: one row per investor, aggregating their
@@ -136,6 +137,7 @@ const NAV_GROUPS = [
     label: "Expense",
     categories: [
       { slug: "other-expense", label: "Other Expense" },
+      { slug: "performance-fees", label: "Performance Fees" },
       { slug: "management-fees", label: "Management Fees" },
     ],
   },
@@ -703,6 +705,7 @@ function renderCompanyView(fund) {
       <button class="subtab-button" data-subtab="corpus-movement">Corpus Movement</button>
       <button class="subtab-button" data-subtab="income">Income</button>
       <button class="subtab-button" data-subtab="other-expense">Other Expense</button>
+      <button class="subtab-button" data-subtab="performance-fees">Performance Fees</button>
       <button class="subtab-button" data-subtab="management-fees">Management Fees</button>
       <button class="subtab-button" data-subtab="soa">SOA</button>
     </div>
@@ -752,8 +755,12 @@ async function loadCompanySubView(fund) {
       const group = NAV_GROUPS.find((g) => g.key === "income");
       container.innerHTML = navGroupMenuHtml(group) + `<div id="nav-category-view"></div>`;
       wireNavGroupMenu(fund, group);
-    } else if (state.companySubTab === "other-expense" || state.companySubTab === "management-fees") {
-      // Expense's 2 categories are each their own top-level tab (no picker) - the tab
+    } else if (
+      state.companySubTab === "other-expense" ||
+      state.companySubTab === "performance-fees" ||
+      state.companySubTab === "management-fees"
+    ) {
+      // Expense's 3 categories are each their own top-level tab (no picker) - the tab
       // itself is the category, so load it straight away.
       const category = state.companySubTab;
       const label = NAV_GROUPS.find((g) => g.key === "expense").categories.find((c) => c.slug === category).label;
@@ -2207,6 +2214,16 @@ async function loadNavCategoryView(fund, category, label) {
       return;
     }
 
+    if (category === "performance-fees") {
+      // Admin-defined checklist (FIXED_VALIDATION_TYPES, starts empty) - same pattern as
+      // Corpus In/Out and the SOA categories, since there's no per-row grouping value
+      // (like Instrument Type) to hang a per-type document on here.
+      const docMap = await apiGet(`/funds/${fund.id}/nav/${category}/validation-docs`).catch(() => ({ mappings: {} }));
+      const checklistHtml = validatedChecklistHtml(FIXED_VALIDATION_TYPES[category] || [], docMap.mappings || {});
+      renderPerformanceFeeTable(view, fund, label, columns, rows, checklistHtml);
+      return;
+    }
+
     view.innerHTML =
       `<h2 class="entity-card__title" style="margin-bottom: 0.75rem;">${escapeHtml(label)}</h2>` +
       tableSectionHtml("nav-flat", columns, `Search ${label.toLowerCase()}...`, true);
@@ -2214,6 +2231,33 @@ async function loadNavCategoryView(fund, category, label) {
   } catch (err) {
     view.innerHTML = `<div class="error-state">${escapeHtml(err.message)}</div>`;
   }
+}
+
+// Performance Fees' list view shows only Investor..Fee Trigger (the sheet's first ~9
+// columns) plus a Status dot at the end - the remaining columns (Contribution Amount/
+// Date, Updated HWM, Formula Check) only show once a row is clicked open, in the same
+// full-field detail panel Closing/XIRR rows use (openSoaRowDetail), which is why `rows`
+// keeps every original field regardless of what's visible in the list.
+function renderPerformanceFeeTable(view, fund, label, columns, rows, checklistHtml) {
+  const cutoffIdx = columns.findIndex((c) => /^fee\s*trigger$/i.test(c.label));
+  const visibleColumns = cutoffIdx === -1 ? columns : columns.slice(0, cutoffIdx + 1);
+  const hasValidation = rows.some((r) => r.__status === "correct" || r.__status === "incorrect");
+  const displayColumns = hasValidation
+    ? [...visibleColumns, { key: "__status", label: "Status", render: (value, record) => statusDotHtml(value, rows.indexOf(record)) }]
+    : visibleColumns;
+
+  // Same "checklist moves into the row detail once rows actually carry a Status" rule
+  // Closing/XIRR use - see loadSoaCategoryView's showChecklistAboveTable.
+  const showChecklistAboveTable = !hasValidation;
+
+  view.innerHTML =
+    `<h2 class="entity-card__title" style="margin-bottom: 0.75rem;">${escapeHtml(label)}</h2>` +
+    (showChecklistAboveTable ? checklistHtml : "") +
+    tableSectionHtml("perf-fees", displayColumns, `Search ${label.toLowerCase()}...`, true, false, "", hasValidation ? statusFilterSelectHtml("perf-fees") : "");
+
+  const rowsWithId = rows.map((row, i) => ({ ...row, id: String(i) }));
+  const openRow = (id) => openSoaRowDetail(label, rows[Number(id)], columns, showChecklistAboveTable ? "" : checklistHtml);
+  wirePaginatedTableSearch("perf-fees", displayColumns, rowsWithId, openRow, `${fund.name} - ${label}.csv`, 40);
 }
 
 // Finds the data column whose label matches `pattern` (e.g. /symbol/i). Uploaded NAV

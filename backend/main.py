@@ -406,6 +406,8 @@ async def admin_upload_nav_category(
             docs, warnings = file_import.parse_other_expense(file.filename, content)
         elif category == "management-fees":
             docs, warnings = file_import.parse_management_fees(file.filename, content)
+        elif category == "performance-fees":
+            docs, warnings = file_import.parse_performance_fee(file.filename, content)
         else:
             df = file_import.read_table(file.filename, content)
             docs, warnings = file_import.parse_generic(df)

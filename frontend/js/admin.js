@@ -135,6 +135,11 @@ const NAV_GROUPS = [
         label: "Other Expense",
         note: "One row per expense type (Broking Fee, Operating Exp, GST, Stamp Duty, ...), with a repeating Exp by FA / Exp by Auditor / Diff column block per month. The expense types shown to investors come straight from this sheet's row labels.",
       },
+      {
+        slug: "performance-fees",
+        label: "Performance Fees",
+        note: "One row per investor per NAV date - Investor, NAV Date, Pre-fee NAV, Hurdle Rate, ..., Fee Trigger, plus Contribution Amount/Date, Updated HWM, and a Formula Check column (\"OK\"/otherwise) the Investor Portal derives each row's Status from directly - no separate auditor-recheck block needed.",
+      },
       { slug: "management-fees", label: "Management Fees" },
     ],
   },
@@ -163,6 +168,7 @@ const VALIDATION_DOC_CATEGORIES = new Set([
   "corporate-action",
   "other-expense",
   "management-fees",
+  "performance-fees",
   "corpus-in",
   "corpus-out",
   "transaction",
@@ -203,6 +209,7 @@ const FIXED_VALIDATION_TYPES = {
   transaction: [],
   closing: [],
   xirr: [],
+  "performance-fees": [],
 };
 
 async function apiGet(path) {
