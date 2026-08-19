@@ -2234,10 +2234,10 @@ async function loadNavCategoryView(fund, category, label) {
 }
 
 // Performance Fees' list view shows only Investor..Fee Trigger (the sheet's first ~9
-// columns) plus a Status dot at the end - the remaining columns (Contribution Amount/
-// Date, Updated HWM, Formula Check) only show once a row is clicked open, in the same
-// full-field detail panel Closing/XIRR rows use (openSoaRowDetail), which is why `rows`
-// keeps every original field regardless of what's visible in the list.
+// columns) plus a Status dot at the end. Clicking any of an investor's rows opens every
+// row for that investor together (their NAV-date cycles), same as Other Expense's
+// per-type trade table or Management Fees' per-investor day-by-day - not just the one
+// row that was clicked - via openPerformanceFeeInvestorDetail below.
 function renderPerformanceFeeTable(view, fund, label, columns, rows, checklistHtml) {
   const cutoffIdx = columns.findIndex((c) => /^fee\s*trigger$/i.test(c.label));
   const visibleColumns = cutoffIdx === -1 ? columns : columns.slice(0, cutoffIdx + 1);
@@ -2246,18 +2246,43 @@ function renderPerformanceFeeTable(view, fund, label, columns, rows, checklistHt
     ? [...visibleColumns, { key: "__status", label: "Status", render: (value, record) => statusDotHtml(value, rows.indexOf(record)) }]
     : visibleColumns;
 
-  // Same "checklist moves into the row detail once rows actually carry a Status" rule
-  // Closing/XIRR use - see loadSoaCategoryView's showChecklistAboveTable.
-  const showChecklistAboveTable = !hasValidation;
-
   view.innerHTML =
     `<h2 class="entity-card__title" style="margin-bottom: 0.75rem;">${escapeHtml(label)}</h2>` +
-    (showChecklistAboveTable ? checklistHtml : "") +
     tableSectionHtml("perf-fees", displayColumns, `Search ${label.toLowerCase()}...`, true, false, "", hasValidation ? statusFilterSelectHtml("perf-fees") : "");
 
+  const investorKey = findColumnKey(columns, /^investor(\s*name)?$/i) || "Investor";
   const rowsWithId = rows.map((row, i) => ({ ...row, id: String(i) }));
-  const openRow = (id) => openSoaRowDetail(label, rows[Number(id)], columns, showChecklistAboveTable ? "" : checklistHtml);
+  const openRow = (id) => {
+    const investorName = rows[Number(id)][investorKey];
+    const investorRows = rows.filter((r) => r[investorKey] === investorName);
+    openPerformanceFeeInvestorDetail(label, investorName, columns, investorRows, checklistHtml);
+  };
   wirePaginatedTableSearch("perf-fees", displayColumns, rowsWithId, openRow, `${fund.name} - ${label}.csv`, 40);
+}
+
+// Shows every row for one investor (their NAV-date cycles) as a table in the side panel,
+// same shape as openTradesDetailPanel but with the admin-defined checklist
+// (validatedChecklistHtml) as the sidebar instead of a single per-type "Validated From"
+// document - Performance Fees has no per-row grouping value (like Instrument Type) to
+// look a document up by, just one fund-wide checklist.
+function openPerformanceFeeInvestorDetail(label, investorName, columns, investorRows, checklistHtml) {
+  const hasValidation = investorRows.some((r) => r.__status === "correct" || r.__status === "incorrect");
+  const detailColumns = hasValidation
+    ? [...columns, { key: "__status", label: "Status", render: (value, record) => statusDotHtml(value, investorRows.indexOf(record)) }]
+    : columns;
+  const bodyHtml = staticTableHtml(detailColumns, investorRows, "No rows found.", true);
+  const sidebarHtml = `${checklistHtml || ""}<div id="side-panel-row-errors"></div>`;
+
+  openSidePanel(label, investorName, bodyHtml, sidebarHtml);
+
+  if (!hasValidation) return;
+  const errorsMount = document.getElementById("side-panel-row-errors");
+  sidePanelBody.querySelectorAll("button[data-status-row]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const row = investorRows[Number(btn.dataset.statusRow)];
+      errorsMount.innerHTML = rowStatusDetailHtml(row, columns);
+    });
+  });
 }
 
 // Finds the data column whose label matches `pattern` (e.g. /symbol/i). Uploaded NAV
