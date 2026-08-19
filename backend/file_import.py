@@ -477,6 +477,24 @@ def parse_performance_fee(filename: str, content: bytes) -> tuple[list[dict], li
     headers = [str(ws.cell(row=header_row, column=c).value or "").strip() for c in range(1, max_col + 1)]
     formula_check_idx = next((i for i, h in enumerate(headers) if _normalize_header(h) == "formulacheck"), None)
 
+    # Excel stores a percent-formatted cell (e.g. "Hurdle Rate" as 0.00%) as the raw
+    # fraction (0.1), not "10" - read back with data_only=True, that fraction is all
+    # openpyxl gives us, the "%" is purely a display format Excel applies on its own side.
+    # Detected once per column from the first data row (a consistent template throughout)
+    # and rendered out as the actual percentage text ("10%") rather than the bare
+    # fraction, since nothing downstream re-multiplies a plain data value by 100.
+    percent_col_indices = {
+        i for i in range(max_col) if "%" in (ws.cell(row=header_row + 1, column=i + 1).number_format or "")
+    }
+
+    def _format_cell(raw_value, is_percent: bool) -> str:
+        if raw_value is None:
+            return ""
+        if is_percent and isinstance(raw_value, (int, float)):
+            pct = f"{raw_value * 100:.2f}".rstrip("0").rstrip(".")
+            return f"{pct}%"
+        return str(raw_value).strip()
+
     docs: list[dict] = []
     for r in range(header_row + 1, max_row + 1):
         raw_values = [ws.cell(row=r, column=c).value for c in range(1, max_col + 1)]
@@ -487,7 +505,7 @@ def parse_performance_fee(filename: str, content: bytes) -> tuple[list[dict], li
         for i, header in enumerate(headers):
             if not header:
                 continue
-            row[header] = "" if raw_values[i] is None else str(raw_values[i]).strip()
+            row[header] = _format_cell(raw_values[i], i in percent_col_indices)
         if not row:
             continue
 
