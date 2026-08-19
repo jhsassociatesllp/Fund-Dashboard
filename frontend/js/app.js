@@ -2692,6 +2692,20 @@ function rowStatusDetailHtml(trade, columns) {
   `;
 }
 
+// Renders a validation field's value (Trade Details / Validating Document / Test
+// Procedure / the single-field "Validated From") as a bulleted list rather than a flat
+// paragraph - an admin separates multiple points onto their own lines (see the textarea
+// in renderGainDetailFieldsEditor), and each becomes its own bullet; a plain single-line
+// value still gets one bullet, for a consistent look whether there's one point or many.
+function validationValueListHtml(value) {
+  const lines = String(value ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length === 0) return `<span class="side-panel__validation-value">Not specified</span>`;
+  return `<ul class="side-panel__validation-list">${lines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ul>`;
+}
+
 // Shared by openInstrumentTypeDetail and openManagementFeesGroupDetail: renders `trades`
 // (a group's member rows) as a table in the side panel body, with a Status dot per row
 // when any of them carry validation - clicking a dot drills into the field-level Fund vs
@@ -2716,13 +2730,13 @@ function openTradesDetailPanel(eyebrow, title, columns, trades, validationDoc, s
           (f) => `
     <div class="side-panel__validation">
       <span class="side-panel__validation-label">${escapeHtml(f.label)}</span>
-      <span class="side-panel__validation-value">${escapeHtml(validationDoc[f.key] || "Not specified")}</span>
+      ${validationValueListHtml(validationDoc[f.key])}
     </div>`
         ).join("")
       : `
     <div class="side-panel__validation">
       <span class="side-panel__validation-label">Validated From</span>
-      <span class="side-panel__validation-value">${escapeHtml(validationDoc || "Not specified")}</span>
+      ${validationValueListHtml(validationDoc)}
     </div>`;
 
   const sidebarHtml = `

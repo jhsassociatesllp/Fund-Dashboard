@@ -1063,6 +1063,17 @@ a.tab-button {
   box-shadow: 0 0 0 3px rgba(22, 64, 122, 0.15);
 }
 
+/* Trade Details/Validating Document/Test Procedure (renderGainDetailFieldsEditor) - a
+   textarea instead of a single-line input, since each line becomes its own bullet on the
+   investor side (see validationValueListHtml). Grows a little past one line so the
+   "one point per line" placeholder hint isn't cut off, but stays resizable rather than
+   forcing every row in the list to the height of its longest field. */
+.validation-doc-input--multiline {
+  min-height: 2.4rem;
+  resize: vertical;
+  line-height: 1.4;
+}
+
 .badge-new {
   flex-shrink: 0;
   padding: 0.1rem 0.42rem;
@@ -2714,6 +2725,27 @@ a.tab-button {
   line-height: 1.45;
   color: var(--navy-900);
   word-break: break-word;
+}
+
+/* Same typography as .side-panel__validation-value, as a bulleted list instead of a flat
+   paragraph - see validationValueListHtml in app.js. Always at least one bullet (even a
+   single-line value gets one), for a consistent look across every value in the panel. */
+.side-panel__validation-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--navy-900);
+}
+
+.side-panel__validation-list li {
+  word-break: break-word;
+}
+
+.side-panel__validation-list li + li {
+  margin-top: 0.3rem;
 }
 
 .side-panel__validation--errors {

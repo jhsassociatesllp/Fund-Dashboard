@@ -648,7 +648,7 @@ function renderGainDetailFieldsEditor(container, fund, category, label, types, m
           </span>
           ${VALIDATION_DETAIL_FIELDS.map(
             (f) =>
-              `<input type="text" class="validation-doc-input" data-type="${escapeHtml(t)}" data-field="${f.key}" value="${escapeHtml(fieldValue(t, f.key))}" placeholder="${escapeHtml(f.placeholder)}" />`
+              `<textarea class="validation-doc-input validation-doc-input--multiline" data-type="${escapeHtml(t)}" data-field="${f.key}" placeholder="${escapeHtml(f.placeholder)}\n(one point per line - each becomes its own bullet)" rows="1">${escapeHtml(fieldValue(t, f.key))}</textarea>`
           ).join("")}
         </div>`
         )
