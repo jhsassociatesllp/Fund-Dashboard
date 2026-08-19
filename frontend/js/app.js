@@ -482,6 +482,16 @@ function maskBankAccount(value) {
   return str.length <= 4 ? str : str.slice(0, 4) + "X".repeat(str.length - 4);
 }
 
+// XIRR's "SOA" column (the base rate the auditor's own recalculation cross-checks -
+// see XIRR_FIELD_ALIASES in file_import.py) arrives from the sheet as a plain
+// decimal-looking number/string with no unit - append "%" for display. Reuses
+// formatCellValue so it still goes through the same raw-value handling (empty -> "-",
+// number formatting, ...) as every other cell rather than reimplementing it.
+function formatSoaPercentCell(value) {
+  const text = formatCellValue({ value }, { key: "value" });
+  return text === "-" ? text : `${text}%`;
+}
+
 function formatCellValue(record, column) {
   const value = record[column.key];
   if (column.currency) return formatCurrency(Number(value) || 0);
@@ -1819,7 +1829,11 @@ async function loadSoaCategoryView(fund) {
     // __-prefixed keys (__status/__errors, Closing/XIRR only) are metadata, not real columns.
     const columns = Object.keys(allRows[0])
       .filter((key) => !key.startsWith("__"))
-      .map((key) => ({ key, label: key }));
+      .map((key) =>
+        /^soa$/i.test(key)
+          ? { key, label: key, render: (value) => escapeHtml(formatSoaPercentCell(value)) }
+          : { key, label: key }
+      );
     const rowsWithId = rows.map((row, i) => ({ ...row, id: String(i) }));
     const prefix = `soa-${category}`;
 
@@ -1989,7 +2003,11 @@ function openSoaRowDetail(label, row, columns = [], checklistHtml = "") {
       ([key, value]) => `
         <div class="client-file__field">
           <span class="client-file__label">${escapeHtml(key)}</span>
-          <span class="client-file__value">${escapeHtml(value === null || value === undefined || value === "" ? "-" : formatNumericDisplay(value) ?? stripMidnightTime(value))}</span>
+          <span class="client-file__value">${
+            /^soa$/i.test(key)
+              ? escapeHtml(formatSoaPercentCell(value))
+              : escapeHtml(value === null || value === undefined || value === "" ? "-" : formatNumericDisplay(value) ?? stripMidnightTime(value))
+          }</span>
         </div>`
     )
     .join("");
