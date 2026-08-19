@@ -32,7 +32,9 @@ const sidePanelClose = document.getElementById("side-panel-close");
 const state = {
   tab: "dashboard",          // 'dashboard' | 'fund-name' | 'fund-scheme'
   fund: null,                 // { id, name }
-  companySubTab: "client-master", // 'client-master' | 'corpus-movement' | 'nav' | 'soa'
+  companySubTab: "client-master", // 'client-master' | 'corpus-movement' | 'income' | 'expense' | 'soa'
+  incomeSubTab: null,           // null | 'realised-gain' | 'unrealised-gain' | 'corporate-action' - null until clicked
+  expenseSubTab: null,          // null | 'other-expense' | 'management-fees' - null until clicked
   soaSubTab: null,             // null | 'transaction' | 'closing' | 'xirr' - null until a section is clicked
   scheme: null,                // { id, name }
   category: null,               // { id, name }
@@ -670,7 +672,8 @@ function renderCompanyView(fund) {
     <div class="subtabs" id="company-subtabs">
       <button class="subtab-button" data-subtab="client-master">Client Master</button>
       <button class="subtab-button" data-subtab="corpus-movement">Corpus Movement</button>
-      <button class="subtab-button" data-subtab="nav">NAV</button>
+      <button class="subtab-button" data-subtab="income">Income</button>
+      <button class="subtab-button" data-subtab="expense">Expense</button>
       <button class="subtab-button" data-subtab="soa">SOA</button>
     </div>
     <div id="company-subview"></div>
@@ -711,9 +714,13 @@ async function loadCompanySubView(fund) {
       );
       wireDateFilterBar("client-master", () => loadCompanySubView(fund));
       wirePaginatedTableSearch("client", CLIENT_COLUMNS, clients, openClientFile, `${fund.name} - Client Master.csv`, 40);
-    } else if (state.companySubTab === "nav") {
-      container.innerHTML = navMenuHtml() + `<div id="nav-category-view"></div>`;
-      wireNavMenu(fund);
+    } else if (state.companySubTab === "income" || state.companySubTab === "expense") {
+      const group = NAV_GROUPS.find((g) => g.key === state.companySubTab);
+      // Always land on the picker, nothing pre-selected - mirrors SOA, which never
+      // auto-opens a section either.
+      state[`${group.key}SubTab`] = null;
+      container.innerHTML = navGroupMenuHtml(group) + `<div id="nav-category-view"></div>`;
+      wireNavGroupMenu(fund, group);
     } else if (state.companySubTab === "soa") {
       // Always land on the picker, nothing pre-selected - mirrors NAV, which never
       // auto-opens a category either.
@@ -1974,42 +1981,46 @@ const NAV_GROUP_ICONS = {
   expense: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l6 6 4-4 8 8"/><path d="M15 18h6v-6"/></svg>`,
 };
 
-const NAV_CHEVRON_ICON = `<svg class="nav-menu__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>`;
-
-function navMenuHtml() {
+// Income/Expense categories are leaf-level on their own top-level tab (no more
+// grouping card to hover first - see NAV_GROUPS), so each renders as a directly-
+// clickable card, same pattern as soaMenuHtml/wireSoaMenu below.
+function navGroupMenuHtml(group) {
+  const activeSlug = state[`${group.key}SubTab`];
   return `
-    <p class="nav-menu__hint">Hover <strong>Income</strong> or <strong>Expense</strong> to pick a category.</p>
+    <p class="nav-menu__hint">Pick a category.</p>
     <div class="nav-menu">
-      ${NAV_GROUPS.map(
-        (group) => `
-        <div class="nav-menu__item">
-          <div class="nav-menu__card nav-menu__card--${group.key}">
-            <span class="nav-menu__icon">${NAV_GROUP_ICONS[group.key] || ""}</span>
-            <div class="nav-menu__card-text">
-              <span class="nav-menu__label">${escapeHtml(group.label)}</span>
-              <span class="nav-menu__count">${group.categories.length} categories</span>
-            </div>
-            ${NAV_CHEVRON_ICON}
+      ${group.categories
+        .map(
+          (c) => `
+        <button
+          type="button"
+          class="nav-menu__card nav-menu__card--${group.key} nav-menu__card--clickable${c.slug === activeSlug ? " is-active" : ""}"
+          data-category="${escapeHtml(c.slug)}"
+          data-label="${escapeHtml(c.label)}"
+        >
+          <span class="nav-menu__icon">${NAV_GROUP_ICONS[group.key] || ""}</span>
+          <div class="nav-menu__card-text">
+            <span class="nav-menu__label">${escapeHtml(c.label)}</span>
           </div>
-          <div class="nav-menu__flyout">
-            <span class="nav-menu__flyout-title">${escapeHtml(group.label)} categories</span>
-            ${group.categories
-              .map(
-                (c) =>
-                  `<button type="button" class="nav-menu__leaf" data-category="${escapeHtml(c.slug)}" data-label="${escapeHtml(c.label)}"><span class="nav-menu__leaf-dot"></span>${escapeHtml(c.label)}</button>`
-              )
-              .join("")}
-          </div>
-        </div>
+        </button>
       `
-      ).join("")}
+        )
+        .join("")}
     </div>
   `;
 }
 
-function wireNavMenu(fund) {
-  document.querySelectorAll(".nav-menu__leaf").forEach((btn) => {
-    btn.addEventListener("click", () => loadNavCategoryView(fund, btn.dataset.category, btn.dataset.label));
+function wireNavGroupMenu(fund, group) {
+  document.querySelectorAll(".nav-menu__card--clickable[data-category]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const stateKey = `${group.key}SubTab`;
+      if (state[stateKey] === btn.dataset.category) return;
+      state[stateKey] = btn.dataset.category;
+      document
+        .querySelectorAll(".nav-menu__card--clickable[data-category]")
+        .forEach((b) => b.classList.toggle("is-active", b === btn));
+      loadNavCategoryView(fund, btn.dataset.category, btn.dataset.label);
+    });
   });
 }
 
@@ -2033,8 +2044,9 @@ function managementFeesDocKey(investorCode, classCode, feePercent) {
 }
 
 async function loadNavCategoryView(fund, category, label) {
-  document.querySelectorAll(".nav-menu__leaf").forEach((btn) => btn.classList.toggle("is-active", btn.dataset.category === category));
-
+  // Active-state toggling on the picker card itself happens in wireNavGroupMenu's
+  // click handler (same split as SOA's wireSoaMenu/loadSoaCategoryView) - this
+  // function only needs to render the category's own data below the picker.
   const view = document.getElementById("nav-category-view");
   view.innerHTML = `<div class="loading-state">Loading ${escapeHtml(label)}...</div>`;
 
