@@ -218,7 +218,17 @@ def _parse_sheet_with_auditor_validation(
     max_row = ws.max_row
 
     has_row1_merge = any(r.min_row <= 1 <= r.max_row for r in ws.merged_cells.ranges)
-    if not has_row1_merge:
+    # Some sheets type the auditor-block label into row 1 without an actual Excel merge
+    # (ws.merged_cells.ranges is empty for the whole sheet) - still a two-row header, just
+    # without the merge this check would otherwise rely on. Row 1 having any cell that
+    # reads as a validator/audit label is enough of a signal on its own (a plain single-row
+    # header's real column names essentially never contain "valid"/"audit" as a substring),
+    # and this is exactly what the forward-fill a few lines down already handles - it just
+    # never used to get reached when the whole sheet had zero merges anywhere.
+    row1_has_audit_label = any(
+        re.search(r"valid|audit", str(ws.cell(row=1, column=c).value or ""), re.I) for c in range(1, max_col + 1)
+    )
+    if not (has_row1_merge or row1_has_audit_label):
         if max_row < 2:
             raise ValueError(f"No data rows found in the uploaded file for {category_label}.")
         headers = [str(ws.cell(row=1, column=c).value or "").strip() for c in range(1, max_col + 1)]
