@@ -3049,7 +3049,7 @@ function validatedChecklistHtml(fixedTypes, mappings) {
           (type) => `
         <div class="side-panel__validation">
           <span class="side-panel__validation-label">${escapeHtml(type)}</span>
-          <span class="side-panel__validation-value">${escapeHtml(mappings[type] || "Not specified")}</span>
+          ${validationValueListHtml(mappings[type])}
         </div>`
         )
         .join("")}
