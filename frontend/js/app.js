@@ -32,9 +32,8 @@ const sidePanelClose = document.getElementById("side-panel-close");
 const state = {
   tab: "dashboard",          // 'dashboard' | 'fund-name' | 'fund-scheme'
   fund: null,                 // { id, name }
-  companySubTab: "client-master", // 'client-master' | 'corpus-movement' | 'income' | 'expense' | 'soa'
+  companySubTab: "client-master", // 'client-master' | 'corpus-movement' | 'income' | 'other-expense' | 'management-fees' | 'soa'
   incomeSubTab: null,           // null | 'realised-gain' | 'unrealised-gain' | 'corporate-action' - null until clicked
-  expenseSubTab: null,          // null | 'other-expense' | 'management-fees' - null until clicked
   soaSubTab: null,             // null | 'transaction' | 'closing' | 'xirr' - null until a section is clicked
   scheme: null,                // { id, name }
   category: null,               // { id, name }
@@ -673,7 +672,8 @@ function renderCompanyView(fund) {
       <button class="subtab-button" data-subtab="client-master">Client Master</button>
       <button class="subtab-button" data-subtab="corpus-movement">Corpus Movement</button>
       <button class="subtab-button" data-subtab="income">Income</button>
-      <button class="subtab-button" data-subtab="expense">Expense</button>
+      <button class="subtab-button" data-subtab="other-expense">Other Expense</button>
+      <button class="subtab-button" data-subtab="management-fees">Management Fees</button>
       <button class="subtab-button" data-subtab="soa">SOA</button>
     </div>
     <div id="company-subview"></div>
@@ -714,13 +714,21 @@ async function loadCompanySubView(fund) {
       );
       wireDateFilterBar("client-master", () => loadCompanySubView(fund));
       wirePaginatedTableSearch("client", CLIENT_COLUMNS, clients, openClientFile, `${fund.name} - Client Master.csv`, 40);
-    } else if (state.companySubTab === "income" || state.companySubTab === "expense") {
-      const group = NAV_GROUPS.find((g) => g.key === state.companySubTab);
-      // Always land on the picker, nothing pre-selected - mirrors SOA, which never
-      // auto-opens a section either.
-      state[`${group.key}SubTab`] = null;
+    } else if (state.companySubTab === "income") {
+      // Income still groups 3 categories behind one tab (Realised/Unrealised Gain,
+      // Corporate Action) - always land on the picker, nothing pre-selected, mirrors
+      // SOA below.
+      state.incomeSubTab = null;
+      const group = NAV_GROUPS.find((g) => g.key === "income");
       container.innerHTML = navGroupMenuHtml(group) + `<div id="nav-category-view"></div>`;
       wireNavGroupMenu(fund, group);
+    } else if (state.companySubTab === "other-expense" || state.companySubTab === "management-fees") {
+      // Expense's 2 categories are each their own top-level tab (no picker) - the tab
+      // itself is the category, so load it straight away.
+      const category = state.companySubTab;
+      const label = NAV_GROUPS.find((g) => g.key === "expense").categories.find((c) => c.slug === category).label;
+      container.innerHTML = `<div id="nav-category-view"></div>`;
+      await loadNavCategoryView(fund, category, label);
     } else if (state.companySubTab === "soa") {
       // Always land on the picker, nothing pre-selected - mirrors NAV, which never
       // auto-opens a category either.
