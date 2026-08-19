@@ -2921,7 +2921,14 @@ async function openInvestorMovementDetail(fund, investorCode, allMovements, move
   const columns = Object.keys(matches[0].data).map((key) => ({ key, label: key }));
   // Inject validation metadata into each row so the UI can render a Status column and
   // show field-level errors in the side panel (same pattern used by NAV/Closing flows).
-  const rows = matches.map((m) => ({ ...m.data, __status: m.status, __errors: m.errors || [] }));
+  // Sorted here (not inherited from allMovements' own order) because the column actually
+  // shown/relevant here is whatever date column lives inside each row's own `.data` (e.g.
+  // Corpus In's "Date of Received") - that's often a different field than the top-level
+  // `movement_date` allMovements was sorted by, which file_import.py derives from a fixed
+  // alias list ("Date of Bank"/"Transaction Date"/...) that doesn't cover every sheet's
+  // actual date header, so `movement_date` can be blank even when the row itself has a
+  // perfectly good date.
+  const rows = sortRowsByDate(matches.map((m) => ({ ...m.data, __status: m.status, __errors: m.errors || [] })));
   const category = movementType === "In" ? "corpus-in" : "corpus-out";
 
   modalPanel.classList.add("modal--wide");
