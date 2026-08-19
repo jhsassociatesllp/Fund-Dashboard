@@ -2101,6 +2101,16 @@ function wireNavGroupMenu(fund, group) {
 // and click into one for its month-by-month figures and auditor validation.
 const GAIN_SUMMARY_CATEGORIES = new Set(["realised-gain", "unrealised-gain", "corporate-action", "other-expense"]);
 
+// Instrument types excluded entirely from a category's Gain view - not just hidden with
+// CSS, filtered out of the row set before the summary/donut/trade-detail are built at all,
+// so their amounts don't sneak into the category's totals either. Matched case-
+// insensitively against the detected Instrument Type column. Per JHS policy for this
+// fund - not a general rule, so it's keyed by category rather than applied everywhere.
+const EXCLUDED_GAIN_INSTRUMENT_TYPES = {
+  "realised-gain": new Set(["slbm", "etf", "invit", "preference share", "reit", "derivative option"]),
+  "unrealised-gain": new Set(["slbm"]),
+};
+
 // Display text for the grouping column, keyed by category - falls back to "Instrument
 // Type" (the gain categories' term) when a category isn't listed here.
 const GROUP_LABEL_BY_CATEGORY = { "other-expense": "Expense Type" };
@@ -2146,10 +2156,15 @@ async function loadNavCategoryView(fund, category, label) {
     // doesn't, so a differently-shaped upload still works.
     const instrumentTypeKey = GAIN_SUMMARY_CATEGORIES.has(category) ? detectInstrumentTypeKey(columns, rows) : null;
     if (instrumentTypeKey) {
+      const excludedTypes = EXCLUDED_GAIN_INSTRUMENT_TYPES[category];
+      const gainRows = excludedTypes
+        ? rows.filter((row) => !excludedTypes.has(String(row[instrumentTypeKey] ?? "").trim().toLowerCase()))
+        : rows;
+
       // Admin-maintained "which document validates this type" list (frontend/js/admin.js
       // is where it's edited); missing/unreachable just means every type shows "Not specified".
       const docMap = await apiGet(`/funds/${fund.id}/nav/${category}/validation-docs`).catch(() => ({ mappings: {} }));
-      renderGainSummary(view, fund, category, label, columns, rows, instrumentTypeKey, docMap.mappings || {});
+      renderGainSummary(view, fund, category, label, columns, gainRows, instrumentTypeKey, docMap.mappings || {});
       return;
     }
 
