@@ -2535,11 +2535,17 @@ function rowStatusDetailHtml(trade, columns) {
     .map((e) => {
       const diffText = e.diff === null || e.diff === undefined ? "-" : NUMBER_FORMAT_2DP.format(e.diff);
       const diffClass = typeof e.diff === "number" && e.diff !== 0 ? " is-diff-negative" : "";
+      // Same "SOA is a percent" rule as the XIRR table itself (formatSoaPercentCell) -
+      // this is the Fund-vs-Auditor breakdown for a row that failed validation, and SOA
+      // is the only field name it's ever shown for that's actually a rate.
+      const isSoaField = /^soa$/i.test(e.field);
+      const originalText = isSoaField ? formatSoaPercentCell(e.original) : formatNumericDisplay(e.original) ?? (e.original || "-");
+      const auditorText = isSoaField ? formatSoaPercentCell(e.auditor) : formatNumericDisplay(e.auditor) ?? (e.auditor || "-");
       return `
       <tr>
         <td>${escapeHtml(e.field)}</td>
-        <td>${escapeHtml(formatNumericDisplay(e.original) ?? (e.original || "-"))}</td>
-        <td>${escapeHtml(formatNumericDisplay(e.auditor) ?? (e.auditor || "-"))}</td>
+        <td>${escapeHtml(originalText)}</td>
+        <td>${escapeHtml(auditorText)}</td>
         <td class="${diffClass.trim()}">${escapeHtml(diffText)}</td>
       </tr>`;
     })
