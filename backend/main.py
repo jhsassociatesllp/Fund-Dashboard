@@ -126,6 +126,35 @@ def _as_text(value, default: str = "-") -> str:
     return str(value).strip() or default
 
 
+def _stringify_data(data: dict) -> dict:
+    """Same defensive coercion as _as_text, applied to every value of a raw
+    upload's header->value `data` dict (NavRecord/SoaRecord/CorpusMovement/
+    DashboardData all type this Dict[str, str]). Real uploads go through
+    file_import, which already stores every cell as str via pandas'
+    dtype=str - but directly-inserted records can carry native int/float/
+    Decimal128 values, which Pydantic won't coerce, 500-ing the whole list.
+    """
+    return {key: _as_text(value, default="") for key, value in (data or {}).items()}
+
+
+def _coerce_errors(errors: list) -> list[dict]:
+    """Same defensive coercion, for NavValidationError.original/auditor - the
+    auditor's recalculated value is a genuine number at parse time (see
+    file_import's *_validate helpers) and sometimes reaches Mongo as one,
+    but the model stores it as Optional[str] (it's shown as text, not
+    computed on), so cast it here rather than at every call site.
+    """
+    coerced = []
+    for err in errors or []:
+        err = dict(err)
+        if err.get("original") is not None:
+            err["original"] = _as_text(err["original"])
+        if err.get("auditor") is not None:
+            err["auditor"] = _as_text(err["auditor"])
+        coerced.append(err)
+    return coerced
+
+
 def client_to_record(doc) -> ClientRecord:
     return ClientRecord(
         id=str(doc["_id"]),
@@ -372,9 +401,9 @@ async def list_nav_records(fund_id: str, category: str):
                 id=str(doc["_id"]),
                 fund_id=doc["fund_id"],
                 category=doc["category"],
-                data=doc.get("data", {}),
+                data=_stringify_data(doc.get("data", {})),
                 status=doc.get("status"),
-                errors=doc.get("errors", []),
+                errors=_coerce_errors(doc.get("errors", [])),
             )
         )
     return records
@@ -435,9 +464,9 @@ async def list_soa_records(fund_id: str, category: str):
                 id=str(doc["_id"]),
                 fund_id=doc["fund_id"],
                 category=doc["category"],
-                data=doc.get("data", {}),
+                data=_stringify_data(doc.get("data", {})),
                 status=doc.get("status"),
-                errors=doc.get("errors", []),
+                errors=_coerce_errors(doc.get("errors", [])),
             )
         )
     return records
@@ -477,7 +506,7 @@ async def get_dashboard():
     async def category_rows(category: str) -> list[dict]:
         rows = []
         async for doc in dashboard_records_collection.find({"category": category}):
-            rows.append(doc.get("data", {}))
+            rows.append(_stringify_data(doc.get("data", {})))
         return rows
 
     fixed_categories = {"fund-nav", "xirr", "client-master"}
@@ -567,7 +596,7 @@ async def list_corpus_movements_for_fund(fund_id: str):
     async for doc in corpus_movements_collection.find({"fund_id": fund_id}).sort("movement_date", 1):
         # Defensive access: some stored documents may not include all keys (movement_date, etc.).
         # Use .get with sensible defaults and log missing critical fields to aid debugging.
-        movement_date = doc.get("movement_date", "")
+        movement_date = _as_text(doc.get("movement_date"), default="")
         investor_code = str(doc.get("investor_code", "")).strip()
         investor_name = str(doc.get("investor_name", "")).strip()
 
@@ -587,13 +616,13 @@ async def list_corpus_movements_for_fund(fund_id: str):
                 movement_date=movement_date,
                 investor_code=investor_code,
                 investor_name=investor_name,
-                movement_type=doc.get("movement_type", ""),
+                movement_type=_as_text(doc.get("movement_type"), default=""),
                 amount=doc.get("amount", 0.0),
-                client_class=doc.get("client_class", ""),
-                bank_account=doc.get("bank_account", ""),
-                data=doc.get("data", {}),
+                client_class=_as_text(doc.get("client_class"), default=""),
+                bank_account=_as_text(doc.get("bank_account"), default=""),
+                data=_stringify_data(doc.get("data", {})),
                 status=doc.get("status"),
-                errors=doc.get("errors", []),
+                errors=_coerce_errors(doc.get("errors", [])),
             )
         )
     return movements
