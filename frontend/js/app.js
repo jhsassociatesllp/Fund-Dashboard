@@ -1975,9 +1975,13 @@ function renderTransactionSummary(view, fund, label, rows, checklistHtml, dateFi
 // Corpus Movement - Transaction is a single upload with mixed rows, not two separate
 // files) plus the fund's Validated From checklist for Transaction, if the admin has set one.
 function openTransactionDetail(investorCode, allRows, checklistHtml) {
-  const records = allRows
-    .filter((r) => (r["Client Code"] ?? "") === investorCode)
-    .sort((a, b) => String(a["Transaction Date"] ?? "").localeCompare(String(b["Transaction Date"] ?? "")));
+  // sortRowsByDate (actual Date parsing) rather than a plain string compare - Transaction
+  // Date arrives as "DD-Mon-YYYY" (e.g. "01-Aug-2023"), which localeCompare sorts as text
+  // (day-of-month first, then month name alphabetically) rather than chronologically.
+  const records = sortRowsByDate(
+    allRows.filter((r) => (r["Client Code"] ?? "") === investorCode),
+    "Transaction Date"
+  );
   if (records.length === 0) return;
 
   const totalIn = records
