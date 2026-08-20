@@ -482,14 +482,14 @@ async function navigateToFundRoot() {
 }
 
 // Bank account numbers are masked everywhere they're displayed on screen - table cell
-// and the client detail panel - showing only the first 4 digits, the rest as X's. CSV
-// export is untouched: downloadCsv/csvCellValue read the raw field directly (same as
-// every other column - see downloadCsv's comment), since that's an explicit admin
-// export rather than on-screen display.
+// and the client detail panel - showing only the last 4 digits, everything before that
+// as X's. CSV export is untouched: downloadCsv/csvCellValue read the raw field directly
+// (same as every other column - see downloadCsv's comment), since that's an explicit
+// admin export rather than on-screen display.
 function maskBankAccount(value) {
   const str = String(value ?? "").trim();
   if (!str || str === "-") return "-";
-  return str.length <= 4 ? str : str.slice(0, 4) + "X".repeat(str.length - 4);
+  return str.length <= 4 ? str : "X".repeat(str.length - 4) + str.slice(-4);
 }
 
 // Appends "%" for display to a value that's a plain decimal number/string with no unit
