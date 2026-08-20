@@ -1823,17 +1823,39 @@ a.tab-button {
 .table-scroll {
   overflow-x: auto;
   background: var(--white);
-  border: 1px solid var(--gray-200);
+  border: 2px solid var(--blue-700);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
 }
 
 /* Compact tables (e.g. the Realised Gain trade-detail side panel) size to their own
-   content instead of stretching the bordered card across the whole panel width. */
+   content instead of stretching the bordered card across the whole panel width. Keeps
+   the original subtle gray border rather than the bold blue one .table-scroll now has -
+   these always sit nested inside an already-bordered side-panel/validation card, where a
+   second heavy blue box around just the inner table would double up and clash. */
 .table-scroll--fit {
   display: inline-block;
   width: auto;
   max-width: 100%;
+  border-color: var(--gray-200);
+  border-width: 1px;
+}
+
+/* Same reasoning as .table-scroll--fit above, for the one nested table that doesn't use
+   --fit (it needs to stay full-width, filling however wide the sidebar's been dragged -
+   see the width:100% comment on .validation-error-table.client-table--compact below). */
+.side-panel__validation--errors .table-scroll {
+  border-color: var(--gray-200);
+  border-width: 1px;
+}
+
+/* Transaction/Corpus In/Corpus Out's investor-detail popups (openTransactionDetail,
+   openInvestorMovementDetail) - the table is the entire modal body with no --fit either,
+   but a modal already reads as its own bordered surface; the bold blue box would be
+   redundant right up against the modal's own edge rather than separating anything. */
+.modal__body .table-scroll {
+  border-color: var(--gray-200);
+  border-width: 1px;
 }
 
 .client-table {
