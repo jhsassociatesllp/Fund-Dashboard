@@ -68,10 +68,9 @@ const CLIENT_COLUMNS = [
   { key: "bank_ifsc_code", label: "Bank IFSC Code" },
   { key: "commitment_amount", label: "Commitment Amount", currency: true },
   { key: "top_up_amount", label: "Top Up Amount", currency: true },
-  { key: "commitment_reduced", label: "Commitment Reduced", currency: true },
+  { key: "commitment_reduced", label: "Redemption", currency: true },
   { key: "total_commitment", label: "Total Commitment", currency: true },
   { key: "initial_contribution", label: "Initial Contribution", currency: true },
-  { key: "distributor_name", label: "Distributor Name" },
   { key: "distributor_code", label: "Distributor Code" },
   { key: "side_letters", label: "Side Letters" },
   { key: "remarks", label: "Remarks" },
@@ -3016,7 +3015,7 @@ async function openClientFile(clientId) {
         <span class="client-file__section-title">Commitment</span>
         ${field("Commitment Amount", formatCurrency(c.commitment_amount), true)}
         ${field("Top Up Amount", formatCurrency(c.top_up_amount), true)}
-        ${field("Commitment Reduced", formatCurrency(c.commitment_reduced), true)}
+        ${field("Redemption", formatCurrency(c.commitment_reduced), true)}
         ${field("Total Commitment", formatCurrency(c.total_commitment), true)}
         ${field("Initial Contribution", formatCurrency(c.initial_contribution), true)}
         ${field("Management Fees", formatPercentCell(c.management_fees))}
