@@ -105,7 +105,7 @@ const INVESTOR_MOVEMENT_SUMMARY_COLUMNS = [
   { key: "investor_code", label: "Investor Code" },
   { key: "investor_name", label: "Investor Name" },
   { key: "client_class", label: "Class" },
-  { key: "bank_account", label: "Bank A/c", raw: true },
+  { key: "bank_account", label: "Bank A/c", raw: true, render: (value) => escapeHtml(maskBankAccount(value)) },
   { key: "total_in", label: "Total In", currency: true },
   { key: "total_out", label: "Total Out", currency: true },
   { key: "net_movement", label: "Net Movement", currency: true },
