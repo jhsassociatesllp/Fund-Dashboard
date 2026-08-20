@@ -801,7 +801,8 @@ function renderManagementFeesValidationDocEditor(container, fund, category, labe
             ${escapeHtml(g.feePercent)}
             ${mappings[g.key] ? "" : '<span class="badge-new">New</span>'}
           </span>
-          <input type="text" class="validation-doc-input" data-type="${escapeHtml(g.key)}" value="${escapeHtml(mappings[g.key] || "")}" placeholder="e.g. Fee Schedule" />
+          <textarea class="validation-doc-input validation-doc-input--multiline" data-type="${escapeHtml(g.key)}" placeholder="e.g. Fee Schedule
+(one point per line - each becomes its own bullet)" rows="1">${escapeHtml(mappings[g.key] || "")}</textarea>
         </div>`
         )
         .join("")}
