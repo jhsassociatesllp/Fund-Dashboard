@@ -2684,7 +2684,7 @@ function rowStatusDetailHtml(trade, columns) {
       <span class="side-panel__validation-value side-panel__validation-value--incorrect">Incorrect</span>
       <div class="table-scroll">
         <table class="client-table client-table--compact validation-error-table">
-          <thead><tr><th>Field</th><th>Fund Value</th><th>Auditor Value</th><th>Diff</th></tr></thead>
+          <thead><tr><th>Field</th><th>Fund Value</th><th>Actual Value</th><th>Diff</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
