@@ -1624,7 +1624,7 @@ function renderDashboardView() {
 
   if (raw.fund_nav.length === 0 && raw.xirr.length === 0 && extraEntries.length === 0) {
     mainEl.innerHTML =
-      heading("Dashboard", "NAV growth and XIRR at a glance.") +
+      heading("Dashboard", "NAV trend and XIRR at a glance.") +
       `
       <div class="detail-panel">
         <div class="empty-state">
@@ -1669,13 +1669,13 @@ function renderDashboardView() {
   const investorInsights = renderInvestorInsights(raw.client_master);
 
   mainEl.innerHTML =
-    heading("Dashboard", "NAV growth and XIRR at a glance.") +
+    heading("Dashboard", "NAV trend and XIRR at a glance.") +
     filterBarHtml +
     (investorInsights ? `<h2 class="entity-card__title dashboard-section-title">Fund Overview</h2>` : "") +
     `
     <div class="dashboard-charts">
       <div class="dashboard-chart-card">
-        <span class="dashboard-chart-card__title">NAV Growth</span>
+        <span class="dashboard-chart-card__title">NAV Trend</span>
         ${navChart.html}
       </div>
       <div class="dashboard-chart-card">
